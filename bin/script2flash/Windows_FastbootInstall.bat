@@ -42,13 +42,14 @@ if errorlevel 1 (
 )
 
 for /f %%i in ('dir /b *.img.zst') do (
- 	set par=%%i
- 	set par=!par:.img.zst=!
- 	del /s /q !par!.img >nul 2>nul 
- 	echo.  Extract !par! ...
+	set par=%%i
+	set par=!par:.img.zst=!
+	del /s /q !par!.img >nul 2>nul 
+	echo.  Extract !par! ...
    	META-INF\zstd -d !par!.img.zst -o !par!.img
 )
 
+:: [FIXED] Vòng lặp nạp Image động có tích hợp Bypass AVB cho HyperOS 2
 for /f %%i in ('dir /b images') do (
 	set par=%%~ni
 	set url=images\%%i
@@ -59,6 +60,15 @@ for /f %%i in ('dir /b images') do (
 		!fastboot! flash preloader_b !url! >nul 2>nul 
 		!fastboot! flash preloader1 !url! >nul 2>nul 
 		!fastboot! flash preloader2 !url! >nul 2>nul 
+	) else if "!par:~0,6!" == "vbmeta" (
+		:: Bắt các file bắt đầu bằng chữ vbmeta và ép cờ bypass
+		echo.  Bypassing AVB for !par!...
+		if !fqlx! == AB (
+			!fastboot! --disable-verity --disable-verification flash !par!_a !url!
+			!fastboot! --disable-verity --disable-verification flash !par!_b !url!
+		) else (
+			!fastboot! --disable-verity --disable-verification flash !par! !url!
+		)
 	) else if !fqlx! == AB ( 
 		!fastboot! flash !par!_a !url!
 		!fastboot! flash !par!_b !url!
@@ -71,7 +81,6 @@ if exist super.img (
         !fastboot! flash super super.img
         del /s /q super.img >nul 2>nul 
 )
-
 
 if /I "%CHOICE%" == "y" (
 	echo.  Formatting...
