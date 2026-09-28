@@ -1,4 +1,4 @@
-﻿work_dir=$(pwd)
+work_dir=$(pwd)
 source $work_dir/functions.sh
 repS="python3 $work_dir/bin/strRep.py"
 sdkLevel=$(cat $work_dir/build/baserom/images/system/system/build.prop |grep "ro.build.version.sdk" |cut -d "=" -f 2 |awk 'NR==1')

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # XiaomiAI/update.sh — unlock Xiaomi premium & AI features (HyperOS 1/2, Android 14).
 #
 # Unlocks:

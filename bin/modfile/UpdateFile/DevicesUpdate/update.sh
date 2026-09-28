@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # DevicesUpdate/update.sh — per-device mods.
 # Runs for every build; each block is gated on the detected codename.
 set -euo pipefail

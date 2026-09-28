@@ -1,4 +1,4 @@
-﻿work_dir=$(pwd)
+work_dir=$(pwd)
 repS="python3 $work_dir/bin/strRep.py"
 source $work_dir/functions.sh
 if [[ ! -d $dir/jar_temp ]]; then

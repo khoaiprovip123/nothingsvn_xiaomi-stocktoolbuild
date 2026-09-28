@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # build.sh — download / unpack / modify a Xiaomi stock ROM.
 # Usage: bash build.sh <URL_OR_PATH_TO_ROM.zip> [repo_name] [prefix_id] [builder_name] [builder_id]
 set -euo pipefail

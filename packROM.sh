@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # packROM.sh — rebuild partition images and pack them into super.img.
 # Run after build.sh has finished modifying build/baserom/images/.
 set -euo pipefail

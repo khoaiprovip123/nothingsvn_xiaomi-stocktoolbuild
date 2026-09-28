@@ -1,4 +1,4 @@
-﻿name: NothingsVN Xiaomi ROM Build
+name: NothingsVN Xiaomi ROM Build
 
 on:
   workflow_dispatch:
@@ -93,7 +93,22 @@ jobs:
           echo "[STEP] Pack ROM" | tee -a build_action.log
           sudo bash packROM.sh 2>&1 | tee -a build_action.log
 
+      # LƯU ROM LÀ ARTIFACT — chạy NGAY sau Pack ROM, TRƯỚC upload.
+      # Runner là tạm thời — nếu upload fail thì ROM vẫn còn ở đây để tải.
+      - name: Save ROM artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lisa-rom-build
+          path: |
+            out/*.zip
+            out/*.install
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Set up Rclone
+        continue-on-error: true
         run: |
           set -e
           set -o pipefail
@@ -101,6 +116,7 @@ jobs:
           sudo -E bash uploadROM.sh setup "${{ secrets.GH_TOKEN }}" "${{ secrets.GH_REPO }}" "${{ secrets.RCLONE_TOKEN_PATH }}" 2>&1 | tee -a build_action.log
 
       - name: Upload ROM to cloud
+        continue-on-error: true
         run: |
           set -e
           set -o pipefail

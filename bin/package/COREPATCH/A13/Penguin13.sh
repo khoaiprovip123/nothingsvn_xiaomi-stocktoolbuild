@@ -1,4 +1,4 @@
-﻿dir=$(pwd)
+dir=$(pwd)
 source $dir/functions.sh
 penguin_frw="python3 $dir/bin/package/COREPATCH/A13/framework_patch.py"
 penguin_srvs="python3 $dir/bin/package/COREPATCH/A13/services_patch.py"

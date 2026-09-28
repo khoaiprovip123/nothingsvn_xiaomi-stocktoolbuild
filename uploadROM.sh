@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # uploadROM.sh — package the flashable zip and upload it.
 # Usage:
 #   bash uploadROM.sh setup <GH_TOKEN> <GH_REPO> <RCLONE_TOKEN_PATH>
