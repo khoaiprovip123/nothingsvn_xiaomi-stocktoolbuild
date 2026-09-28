@@ -1,4 +1,4 @@
-name: NothingsVN Xiaomi ROM Build
+﻿name: NothingsVN Xiaomi ROM Build
 
 on:
   workflow_dispatch:
@@ -42,6 +42,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: Send start notification
+        continue-on-error: true
         run: |
           pip install requests
           python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
@@ -278,6 +279,7 @@ jobs:
           fi
 
       - name: Send success notification
+        continue-on-error: true
         if: success()
         env:
           NOTIFY_WORKFLOW_CONCLUSION: success
@@ -285,6 +287,7 @@ jobs:
           python notify.py success "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
 
       - name: Send failure notification
+        continue-on-error: true
         if: failure()
         env:
           NOTIFY_WORKFLOW_CONCLUSION: failure
@@ -293,6 +296,7 @@ jobs:
           python notify.py fail "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
 
       - name: Send cancellation notification
+        continue-on-error: true
         if: cancelled()
         env:
           NOTIFY_WORKFLOW_CONCLUSION: cancelled
