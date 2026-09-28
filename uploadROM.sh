@@ -19,7 +19,7 @@ RCLONE_CONFIG_1DRIVE="$work_dir/rclone.conf"
 ONEDRIVE_REMOTE="nothings-toolbuild"
 
 # Google Drive destination — override via env, never hardcode a secret-ish ID.
-: "${GDRIVE_FOLDER_ID:=1aJw0uWIMD7Yc1n4O1mjbI0YLHjRevfxl}"
+: "${GDRIVE_FOLDER_ID:=1Ezo6s99nX70l_wV24WAzr_A4t4WpFdSx}"
 
 os_type=$(cat "$work_dir/bin/ddevice/os_type.txt")
 base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt")
