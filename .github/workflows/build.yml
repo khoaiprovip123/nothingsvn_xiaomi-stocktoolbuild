@@ -198,10 +198,16 @@ jobs:
 
       - name: Update Status to My-Assets
         if: always()
+        continue-on-error: true
         env:
           # Override in repo secrets; defaults to the current owner's My-Assets.
           MY_ASSETS_REPO: ${{ secrets.MY_ASSETS_REPO || format('{0}/My-Assets', github.repository_owner) }}
         run: |
+          # Status update is OPTIONAL — never fail the build over a bad GH_TOKEN.
+          if [ -z "${{ secrets.GH_TOKEN }}" ]; then
+            echo "WARN: GH_TOKEN not set — skipping My-Assets status update."
+            exit 0
+          fi
           git clone "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${MY_ASSETS_REPO}.git" my-assets
           cd my-assets
           git config user.name "github-actions[bot]"

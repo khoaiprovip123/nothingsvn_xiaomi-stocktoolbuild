@@ -719,8 +719,11 @@ def main():
     write_file("bin/ddevice/telegram_build_id.txt", build_id_arg)
 
     if not bot_token_arg or not channel_id_arg:
-        print("Lỗi: thiếu TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHANNEL_ID trong biến môi trường.")
-        sys.exit(1)
+        # Notification is OPTIONAL — never kill the build over a missing Telegram secret.
+        # Just warn and exit 0 so build.sh can continue.
+        print("WARN: thiếu TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHANNEL_ID — bỏ qua gửi thông báo.")
+        print("      (Cấu hình trong GitHub Secrets nếu muốn nhận thông báo build.)")
+        sys.exit(0)
 
     send_notification(
         args.status,
