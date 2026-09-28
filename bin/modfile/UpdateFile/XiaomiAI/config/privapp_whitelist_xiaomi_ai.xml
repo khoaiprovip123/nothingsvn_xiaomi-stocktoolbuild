@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Whitelist for Xiaomi AI / premium packages so they can be installed as
+  priv-apps and receive privileged permissions on HyperOS 1 / Android 14.
+-->
+<permissions>
+    <privapp-permissions package="com.miui.voiceassist">
+        <permission name="android.permission.RECORD_AUDIO" />
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        <permission name="android.permission.ACCESS_NETWORK_STATE" />
+        <permission name="android.permission.INTERNET" />
+    </privapp-permissions>
+    <privapp-permissions package="com.miui.notes">
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        <permission name="android.permission.INTERNET" />
+    </privapp-permissions>
+    <privapp-permissions package="com.miui.gallery">
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        <permission name="android.permission.INTERNET" />
+        <permission name="android.permission.CAMERA" />
+    </privapp-permissions>
+    <privapp-permissions package="com.android.quicksearchbox">
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" />
+        <permission name="android.permission.INTERNET" />
+    </privapp-permissions>
+</permissions>

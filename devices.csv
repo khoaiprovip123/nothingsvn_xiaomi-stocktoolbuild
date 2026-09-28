@@ -1,0 +1,40 @@
+# devices.csv — bảng thiết bị THỐNG NHẤT (nguồn duy nhất cho mọi script)
+#
+# Cột:
+#   codename      : tên thiết bị (device_f.txt / getSuperSize / avb_list)
+#   market_name   : tên thương mại
+#   super_size    : kích thước super.img (bytes) — dùng cho lpmake
+#   avb_required  : true = cần tắt AVB đầy đủ (fstab + vendor_boot + vbmeta)
+#   android       : version Android chính
+#   supported_os  : HyperOS hỗ trợ (cách nhau dấu phẩy)
+#   notes         : ghi chú
+#
+# Thêm thiết bị mới = thêm 1 dòng. KHÔNG hardcode ở script khác nữa.
+#
+# Lưu ý tên máy Xiaomi (hay nhầm):
+#   renoir  = Xiaomi 11 Lite 4G
+#   courbet = Xiaomi 11 Lite 5G
+#   lisa    = Xiaomi 11 Lite 5G NE
+#   taoyao  = Xiaomi 12 Lite        (KHÔNG phải lisa)
+
+codename,market_name,super_size,avb_required,android,supported_os,notes
+lisa,Xiaomi 11 Lite 5G NE,9126805504,true,14,"OS1,OS2",Máy chính — test trọng tâm · SD778G · 6.55" AMOLED 90Hz · cam 64MP
+renoir,Xiaomi 11 Lite 4G,9126805504,true,14,"OS1,OS2",Cần xác minh super_size · SD732G · 90Hz · cam 64MP
+courbet,Xiaomi 11 Lite 5G,9126805504,true,14,"OS1,OS2",Cần xác minh super_size · SD780G · 90Hz · cam 64MP
+spes,Redmi Note 10 Pro,7516192768,true,13,OS1,Có mod Dolby riêng
+topaz,Redmi Note 12,7516192768,true,13,OS1,
+sapphire,Redmi Note 12,7516192768,true,13,OS1,
+gale,Redmi Note 13,7516192768,true,13,"OS1,OS2",
+air,Redmi Note 13,7516192768,true,13,"OS1,OS2",
+houji,Xiaomi 14,8321499136,true,14,"OS1,OS2",
+shennong,Xiaomi 14 Pro,8321499136,true,14,"OS1,OS2",
+fuxi,Xiaomi 13,9663676416,true,13,"OS1,OS2",
+nuwa,Xiaomi 13 Pro,9663676416,true,13,"OS1,OS2",
+ishtar,Xiaomi 13 Ultra,9663676416,true,13,"OS1,OS2",
+marble,Redmi Note 12 Turbo,9663676416,true,13,"OS1,OS2",
+ruby,Redmi Note 12 Pro,9126805504,true,13,OS1,
+sunstone,Redmi Note 12 5G,9122611200,true,13,OS1,
+tapas,POCO M5s,7516192768,true,12,OS1,
+mist,Redmi Note 11,10200547328,false,12,OS1,AVB tối thiểu
+arctic,Redmi Note 11 Pro,10200547328,false,12,OS1,
+somalia,Redmi Note 11 Pro+,10200547328,false,12,OS1,

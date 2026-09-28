@@ -1,0 +1,35 @@
+# .graphifyignore — chỉ index code pipeline, bỏ vendor + binary
+# Vendored AOSP tree (Java/C source không phải code dự án)
+bin/package/DISABLE_AVB/HMATools/
+
+# Binary assets (APK, so, jar, img, pem, der)
+*.apk
+*.so
+*.jar
+*.img
+*.pem
+*.der
+*.zip
+*.mp3
+*.mp4
+*.ttf
+*.otf
+*.mtz
+*.mrc
+*.mrm
+*.mra
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+
+# Build output / cache
+graphify-out/
+build/
+out/
+__pycache__/
+*.pyc
+
+# Smoke tests (scratch)
+_smoke_*.sh

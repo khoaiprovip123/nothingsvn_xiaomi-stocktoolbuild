@@ -689,17 +689,22 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
         print(f"Lỗi khi gửi/cập nhật thông báo Telegram: {exc}")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print("Cách dùng: python notify.py <status> <repo_name> <rom_link> [prefix_id] [builder_name] [builder_id]")
-        sys.exit(1)
+def main():
+    import argparse
 
-    status_arg = sys.argv[1]
-    repo_name_arg = sys.argv[2]
-    rom_link_arg = sys.argv[3]
-    prefix = sys.argv[4] if len(sys.argv) > 4 else "build"
-    builder_name_arg = sys.argv[5] if len(sys.argv) > 5 else ""
-    builder_id_arg = sys.argv[6] if len(sys.argv) > 6 else ""
+    parser = argparse.ArgumentParser(
+        description="Send a Telegram build-status notification."
+    )
+    parser.add_argument(
+        "status",
+        help="Build stage/status: start, download, unpack, build, pack, upload, success, fail, cancelled",
+    )
+    parser.add_argument("repo_name", help="GitHub repository (owner/name)")
+    parser.add_argument("rom_link", help="Source ROM URL or path")
+    parser.add_argument("prefix_id", nargs="?", default="build", help="Build id prefix")
+    parser.add_argument("builder_name", nargs="?", default="", help="Builder display name")
+    parser.add_argument("builder_id", nargs="?", default="", help="Builder Telegram chat id")
+    args = parser.parse_args()
 
     bot_token_arg = os.environ.get("TELEGRAM_BOT_TOKEN")
     channel_id_arg = os.environ.get("TELEGRAM_CHANNEL_ID")
@@ -708,7 +713,7 @@ if __name__ == "__main__":
 
     if not build_id_arg:
         random_digits = "".join(random.choices(string.digits, k=8))
-        build_id_arg = f"{prefix}_{random_digits}"
+        build_id_arg = f"{args.prefix_id}_{random_digits}"
         save_env("TELEGRAM_BUILD_ID", build_id_arg)
 
     write_file("bin/ddevice/telegram_build_id.txt", build_id_arg)
@@ -718,13 +723,17 @@ if __name__ == "__main__":
         sys.exit(1)
 
     send_notification(
-        status_arg,
-        repo_name_arg,
-        rom_link_arg,
+        args.status,
+        args.repo_name,
+        args.rom_link,
         channel_id_arg,
         bot_token_arg,
         msg_id_arg,
         build_id_arg,
-        builder_name_arg,
-        builder_id_arg,
+        args.builder_name,
+        args.builder_id,
     )
+
+
+if __name__ == "__main__":
+    main()

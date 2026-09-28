@@ -1,110 +1,148 @@
+#!/usr/bin/env bash
+# uploadROM.sh — package the flashable zip and upload it.
+# Usage:
+#   bash uploadROM.sh setup <GH_TOKEN> <GH_REPO> <RCLONE_TOKEN_PATH>
+#   bash uploadROM.sh
+set -euo pipefail
+
 work_dir=$(pwd)
-source $work_dir/functions.sh
+export WORK_DIR="$work_dir"
+
+tools_dir="${work_dir}/bin/$(uname)/$(uname -m)"
+export PATH="${tools_dir}:${PATH}"
+chmod +x "${tools_dir}"/* 2>/dev/null || true
+
+# shellcheck source=functions.sh
+source "$work_dir/functions.sh"
+
 RCLONE_CONFIG_1DRIVE="$work_dir/rclone.conf"
 ONEDRIVE_REMOTE="nothings-toolbuild"
-os_type=$(cat $work_dir/bin/ddevice/os_type.txt)
-base_rom_code=$(cat $work_dir/bin/ddevice/base_rom_code.txt)
-androidVER=$(cat $work_dir/bin/ddevice/androidver.txt)
-rom_os=$(cat $work_dir/bin/ddevice/rom_os.txt)
-regionTYPE=$(cat $work_dir/bin/ddevice/device_type.txt)
-device_code=$(cat $work_dir/bin/ddevice/device_code.txt)
-baserom_type=$(cat $work_dir/bin/ddevice/romtype.txt)
-device_f=$(cat $work_dir/bin/ddevice/device_f.txt)
 
-if [ "$1" == "setup" ]; then
-  if [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
-    echo "[ERROR] - Please provide rclone token and remote name"
-    exit 1
+# Google Drive destination — override via env, never hardcode a secret-ish ID.
+: "${GDRIVE_FOLDER_ID:=1aJw0uWIMD7Yc1n4O1mjbI0YLHjRevfxl}"
+
+os_type=$(cat "$work_dir/bin/ddevice/os_type.txt")
+base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt")
+androidVER=$(cat "$work_dir/bin/ddevice/androidver.txt")
+rom_os=$(cat "$work_dir/bin/ddevice/rom_os.txt")
+regionTYPE=$(cat "$work_dir/bin/ddevice/device_type.txt")
+device_code=$(cat "$work_dir/bin/ddevice/device_code.txt")
+baserom_type=$(cat "$work_dir/bin/ddevice/romtype.txt")
+device_f=$(cat "$work_dir/bin/ddevice/device_f.txt")
+
+if [ "${1:-}" == "setup" ]; then
+  if [ -z "${2:-}" ] || [ -z "${3:-}" ] || [ -z "${4:-}" ]; then
+    die "Please provide rclone token and remote name"
   fi
-  curl  -s -o $work_dir/rclone.conf \
+  curl -s -o "$work_dir/rclone.conf" \
         -H "Authorization: token $2" \
         -H "Accept: application/vnd.github.v3.raw" \
-        -L https://api.github.com/repos/$3/contents/$4
-        
+        -L "https://api.github.com/repos/$3/contents/$4"
+
   TOKEN_DIR=$(dirname "$4")
   if [ "$TOKEN_DIR" == "." ]; then
     TOKEN_PATH="token.pickle"
   else
     TOKEN_PATH="$TOKEN_DIR/token.pickle"
   fi
-  
-  curl  -s -o $work_dir/token.pickle \
+
+  curl -s -o "$work_dir/token.pickle" \
         -H "Authorization: token $2" \
         -H "Accept: application/vnd.github.v3.raw" \
-        -L https://api.github.com/repos/$3/contents/$TOKEN_PATH
-        
+        -L "https://api.github.com/repos/$3/contents/$TOKEN_PATH"
+
   exit 0
 fi
 
-
-if [[ $(git branch --show-current) == "beta" ]]; then
+if [[ "$(git branch --show-current 2>/dev/null || true)" == "beta" ]]; then
     polyxver="$(cat Version)"
-	status="Development"
+    status="Development"
 else
     polyxver="$(cat Version)"
-	status="Official"
+    status="Official"
 fi
 
-if [[ $rom_os == "MIUI" ]];then
+if [[ $rom_os == "MIUI" ]]; then
     os_type="MIUI"
 else
     os_type="HyperOS"
 fi
 
 repack "Generating flashing script"
+out_dir="${work_dir}/out/${os_type}_${device_code}_${base_rom_code}"
 if [[ ${baserom_type} == 'payload' ]]; then
-    mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
-    mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/super/
-	mv -f $work_dir/build/baserom/images/super.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/super/
-    mv -f $work_dir/build/baserom/images/*.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
+    mkdir -p "${out_dir}/images/" "${out_dir}/super/"
+    mv -f "$work_dir/build/baserom/images/super.img" "${out_dir}/super/"
+    mv -f "$work_dir/build/baserom/images/"*.img "${out_dir}/images/"
 elif [[ ${baserom_type} == 'br' ]]; then
-    mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
-    mv -f $work_dir/build/baserom/firmware-update/* $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
-    mv -f $work_dir/build/baserom/images/super.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/super/
+    mkdir -p "${out_dir}/images/"
+    mv -f "$work_dir/build/baserom/firmware-update/"* "${out_dir}/images/"
+    mv -f "$work_dir/build/baserom/images/super.img" "${out_dir}/super/"
 fi
 
-cp -rf $work_dir/bin/script2flash/cust.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/ 2>/dev/null || true
-cp -rf $work_dir/bin/script2flash/*.install $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
+cp -f "$work_dir/bin/script2flash/cust.img" "${out_dir}/images/" 2>/dev/null || true
+cp -f "$work_dir/bin/script2flash/"*.install "${out_dir}/" 2>/dev/null || true
 
-find out/${os_type}_${device_code}_${base_rom_code} |xargs touch
-pushd out/${os_type}_${device_code}_${base_rom_code}/ || exit
-zip -r ${os_type}_${device_code}_${base_rom_code}.zip ./*
-mv ${os_type}_${device_code}_${base_rom_code}.zip ../
-popd || exit
-hash=$(md5sum out/${os_type}_${device_code}_${base_rom_code}.zip |head -c 5)
-mv out/${os_type}_${device_code}_${base_rom_code}.zip out/${os_type}_${polyxver}_${device_code}_${base_rom_code}_${hash}_${status}.zip
-repack "Build completed"    
+# Copy file nạp FASTBOOT vào output (user nạp bằng fastboot, không dùng recovery).
+for flasher in flash_fastboot.bat flash_fastboot.sh; do
+    if [[ -f "$work_dir/bin/script2flash/$flasher" ]]; then
+        cp -f "$work_dir/bin/script2flash/$flasher" "${out_dir}/"
+        chmod +x "${out_dir}/$flasher" 2>/dev/null || true
+        info "Flasher added: $flasher"
+    fi
+done
+
+# BẮT BUỘC: copy META-INF/ (update-binary + bin + Data) vào zip — thiếu thì
+# zip không flash được bằng recovery (không có update-binary).
+if [[ -d "$work_dir/bin/script2flash/META-INF" ]]; then
+    rm -rf "${out_dir}/META-INF"
+    cp -rf "$work_dir/bin/script2flash/META-INF" "${out_dir}/META-INF"
+    # Đảm bảo update-binary có quyền thực thi trong zip.
+    chmod 755 "${out_dir}/META-INF/com/google/android/update-binary" 2>/dev/null || true
+    info "META-INF (recovery flasher) added to ROM"
+else
+    die "script2flash/META-INF missing — ROM would not be flashable"
+fi
+
+# Ghi BUILD_INFO.txt vào ROM zip — để biết build này từ nguồn nào, mod nào.
+bash "$work_dir/bin/ddevice/genBuildInfo.sh"
+if [[ -f "$work_dir/build/baserom/BUILD_INFO.txt" ]]; then
+    cp -f "$work_dir/build/baserom/BUILD_INFO.txt" "${out_dir}/"
+    info "BUILD_INFO.txt added to ROM"
+fi
+
+find "${out_dir}" | xargs touch
+pushd "${out_dir}" >/dev/null || exit 1
+zip -r "${os_type}_${device_code}_${base_rom_code}.zip" ./*
+mv "${os_type}_${device_code}_${base_rom_code}.zip" ../
+popd >/dev/null || exit 1
+
+hash=$(md5sum "out/${os_type}_${device_code}_${base_rom_code}.zip" | head -c 5)
+final_zip="out/${os_type}_${polyxver}_${device_code}_${base_rom_code}_${hash}_${status}.zip"
+mv "out/${os_type}_${device_code}_${base_rom_code}.zip" "$final_zip"
+repack "Build completed"
 repack "Output: "
-repack "$(pwd)/out/${os_type}_${polyxver}_${device_code}_${base_rom_code}_${hash}_${status}.zip"
+repack "$(pwd)/${final_zip}"
 upload "Uploading"
-output_file="out/${os_type}_${polyxver}_${device_code}_${base_rom_code}_${hash}_${status}.zip"
-echo "${os_type}_${polyxver}_${device_code}_${base_rom_code}_${hash}_${status}.zip" > $work_dir/bin/ddevice/output_zip.txt
+output_file="$final_zip"
+printf '%s\n' "$(basename "$final_zip")" > "$work_dir/bin/ddevice/output_zip.txt"
 
-if [[ $rom_os == "MIUI" ]];then
+if [[ $rom_os == "MIUI" ]]; then
     uploaddir="MIUI"
 else
     uploaddir="HyperOS"
 fi
 
-# 1drive
-# if [[ $rom_os == "MIUI" ]]; then
-#     rclone -v --config="$RCLONE_CONFIG_1DRIVE" copy "$output_file" "$ONEDRIVE_REMOTE:NTBuild/${uploaddir}/${polyxver}/${device_code}/" || {
-#         upload "Error uploading file to OneDrive: $FILENAME"
-#         exit 1
-#     }
-# else
-#     rclone -v --config="$RCLONE_CONFIG_1DRIVE" copy "$output_file" "$ONEDRIVE_REMOTE:NTBuild/${uploaddir}/${polyxver}/${device_code}/" || {
-#         upload "Error uploading file to OneDrive: $FILENAME"
-#         exit 1
-#     }
-# fi  
+# 1drive (kept for reference — currently unused)
+# rclone -v --config="$RCLONE_CONFIG_1DRIVE" copy "$output_file" \
+#     "$ONEDRIVE_REMOTE:NTBuild/${uploaddir}/${polyxver}/${device_code}/"
 
 # Google Drive
 upload "Uploading to Google Drive..."
-python $work_dir/upload_rom_api.py "$output_file" --folder_id "1aJw0uWIMD7Yc1n4O1mjbI0YLHjRevfxl" --path "${uploaddir}/${polyxver}/${device_code}/" || {
-    upload "Error uploading file to Google Drive"
-}
+python3 "$work_dir/upload_rom_api.py" "$output_file" \
+    --folder_id "$GDRIVE_FOLDER_ID" \
+    --path "${uploaddir}/${polyxver}/${device_code}/" \
+    || upload "Error uploading file to Google Drive"
 
 upload "Clean Workflow.."
-
 upload "Build ${os_type}_${polyxver} for ${device_code} successfull!"

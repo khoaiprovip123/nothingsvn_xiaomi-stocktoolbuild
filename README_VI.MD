@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # 🚀 NothingsVN AutoBuild — Phiên bản Xiaomi
 
@@ -49,7 +49,7 @@
 ## 📁 Cấu trúc dự án
 
 ```
-nothingsvn_xiaomi-toolbuild/
+nothingsvn_xiaomi-stocktoolbuild/
 ├── 📜 build.sh              # Script build chính
 ├── 📜 functions.sh          # Các hàm tiện ích dùng chung
 ├── 📜 packROM.sh            # Đóng gói ROM (super.img + phân vùng)
@@ -95,8 +95,8 @@ bash setup.sh
 
 ```bash
 # Clone repository
-git clone https://github.com/tiencv2006/nothingsvn_xiaomi-toolbuild.git
-cd nothingsvn_xiaomi-toolbuild
+git clone https://github.com/BEACHEADVN/nothingsvn_xiaomi-stocktoolbuild.git
+cd nothingsvn_xiaomi-stocktoolbuild
 ```
 
 ```bash

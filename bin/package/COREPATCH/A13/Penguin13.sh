@@ -1,4 +1,4 @@
-dir=$(pwd)
+﻿dir=$(pwd)
 source $dir/functions.sh
 penguin_frw="python3 $dir/bin/package/COREPATCH/A13/framework_patch.py"
 penguin_srvs="python3 $dir/bin/package/COREPATCH/A13/services_patch.py"
@@ -15,7 +15,7 @@ fi
 
 get_file_dir() {
 	if [[ $1 ]]; then
-		sudo find $dir/build/baserom/images/ -name $1 
+		find $dir/build/baserom/images/ -name $1 
 	else 
 		return 0
 	fi
@@ -35,8 +35,8 @@ jar_util()
 
         file_path=$(get_file_dir $2)
         if [[ $file_path ]]; then
-            sudo cp "$file_path" $dir/jar_temp
-            sudo chown $(whoami) $dir/jar_temp/$2
+            cp "$file_path" $dir/jar_temp
+            chown $(whoami) $dir/jar_temp/$2
             unzip $dir/jar_temp/$2 -d $dir/jar_temp/$2.out  >/dev/null 2>&1
             if [[ -d $dir/jar_temp/"$2.out" ]]; then
                 rm -rf $dir/jar_temp/$2
@@ -75,7 +75,7 @@ jar_util()
                 #zip -r -j -0 $dir/jar_temp/$2_notal $dir/jar_temp/$2.out/.
                 zipalign 4 $dir/jar_temp/$2_notal $dir/jar_temp/$2
                 if [[ -f $dir/jar_temp/$2 ]]; then
-                    sudo cp -rf $dir/jar_temp/$2 $(get_file_dir $2)
+                    cp -rf $dir/jar_temp/$2 $(get_file_dir $2)
                     patch "$2 Success"
                     rm -rf $dir/jar_temp/$2.out $dir/jar_temp/$2_notal 
                 else

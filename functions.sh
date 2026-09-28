@@ -1,102 +1,72 @@
 #!/bin/bash
 WORK_DIR=$(pwd)
 
-mods() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [MODS] - $1
+# Shared log helper — always quote the message so spaces/globs survive.
+_log() {
+    local tag="$1"
+    shift
+    if [ "$#" -ge 1 ]; then
+        printf '[%s] - %s\n' "$tag" "$*"
     else
-        echo "Usage: mods <string>"
+        printf 'Usage: %s <string>\n' "${FUNCNAME[1]:-log}"
     fi
 }
 
-info() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [INFO] - $1
-    else
-        echo "Usage: info <string>"
-    fi
+mods()         { _log "MODS"            "$@"; }
+info()         { _log "INFO"            "$@"; }
+warn()         { _log "WARN"            "$@"; }
+yellow()       { _log "WARN"            "$@"; }
+error()        { _log "ERROR"           "$@"; }
+unpack()       { _log "UNPACK"          "$@"; }
+unpack_erofs() { _log "UNPACK - EROFS"  "$@"; }
+unpack_ext()   { _log "UNPACK - EXT4"   "$@"; }
+repack()       { _log "REPACK"          "$@"; }
+upload()       { _log "UPLOADING"       "$@"; }
+patch()        { _log "PATCH"           "$@"; }
+
+# Fatal error: print and exit non-zero.
+die() {
+    error "$*"
+    exit 1
 }
-
-warn() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [WARN] - $1
-    else
-        echo "Usage: warn <string>"
-    fi
-}
-
-error() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [ERROR] - $1
-    else
-        echo "Usage: error <string>"
-    fi
-}
-
-unpack() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [UNPACK] - $1
-    else
-        echo "Usage: unpack <string>"
-    fi
-}
-
-unpack_erofs() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [UNPACK - EROFS] - $1
-    else
-        echo "Usage: unpack_erofs <string>"
-    fi
-}
-
-unpack_ext() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [UNPACK - EXT4] - $1
-    else
-        echo "Usage: unpack_ext <string>"
-    fi
-}
-
-repack() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [REPACK] - $1
-    else
-        echo "Usage: repack <string>"
-    fi
-}
-
-upload() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [UPLOADING] - $1
-    else
-        echo "Usage: upload <string>"
-    fi
-}
-
-patch() {
-    if [ "$#" -eq 1 ] ; then
-        echo -e [PATCH] - $1
-    else
-        echo "Usage: patch <string>"
-    fi
-}
-
-
 
 # Check for required dependencies
 exists() {
     command -v "$1" > /dev/null 2>&1
 }
 
+# Map of tools that are NOT plain apt package names.
+# zipalign / aapt ship with the Android build-tools; extract.erofs / gettype /
+# payload-extract / lpmake are the prebuilt binaries under bin/.
+_tool_apt_name() {
+    case "$1" in
+        zipalign|aapt) echo "android-sdk-build-tools" ;;
+        *) echo "$1" ;;
+    esac
+}
+
 abort() {
-    yellow "--> Missing $1 ! installing..."
-    apt install $1 -y
+    local tool="$1"
+    local pkg
+    pkg=$(_tool_apt_name "$tool")
+    yellow "--> Missing $tool ! installing $pkg..."
+    if exists apt-get; then
+        apt-get install -y "$pkg" || die "Failed to install dependency: $pkg (needed for $tool)"
+    else
+        die "Missing dependency: $tool (install package '$pkg' manually)"
+    fi
+    exists "$tool" || die "Dependency still missing after install: $tool"
 }
 
 check() {
+    local missing=0
     for b in "$@"; do
-        exists "$b" || abort "$b"
+        if ! exists "$b"; then
+            abort "$b"
+            missing=1
+        fi
     done
+    return 0
 }
 
 # Check for a prop's existence
@@ -140,51 +110,85 @@ disable_avb_verify() {
 }
 
 remove_data_encrypt() {
+    local fstab_files
     fstab_files=$(find "$1" -type f -name "*fstab*")
     info "Disabling data enc in files: $fstab_files"
     if [[ -z "$fstab_files" ]]; then
         yellow "No fstab files found in $1"
         return
     fi
+    local fstab
     for fstab in $fstab_files; do
-        if [[ -f $fstab ]]; then
-            sed -i "s/,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized+wrappedkey_v0//g" $fstab
-            sed -i "s/,fileencryption=aes-256-xts:aes-256-cts:v2+emmc_optimized+wrappedkey_v0//g" $fstab
-            sed -i "s/,fileencryption=aes-256-xts:aes-256-cts:v2//g" $fstab
-            sed -i "s/,metadata_encryption=aes-256-xts:wrappedkey_v0//g" $fstab
-            sed -i "s/,fileencryption=aes-256-xts:wrappedkey_v0//g" $fstab
-            sed -i "s/,metadata_encryption=aes-256-xts//g" $fstab
-            sed -i "s/,fileencryption=aes-256-xts//g" $fstab
-            sed -i "s/fileencryption/encryptable/g" $fstab
-            sed -i "s/,fileencryption=ice//g" $fstab
+        if [[ -f "$fstab" ]]; then
+            sed -i \
+                -e "s/,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized+wrappedkey_v0//g" \
+                -e "s/,fileencryption=aes-256-xts:aes-256-cts:v2+emmc_optimized+wrappedkey_v0//g" \
+                -e "s/,fileencryption=aes-256-xts:aes-256-cts:v2//g" \
+                -e "s/,metadata_encryption=aes-256-xts:wrappedkey_v0//g" \
+                -e "s/,fileencryption=aes-256-xts:wrappedkey_v0//g" \
+                -e "s/,metadata_encryption=aes-256-xts//g" \
+                -e "s/,fileencryption=aes-256-xts//g" \
+                -e "s/fileencryption/encryptable/g" \
+                -e "s/,fileencryption=ice//g" \
+                "$fstab"
         else
             yellow "$fstab not found, please check it manually"
         fi
     done
 }
 
+# Extract a partition image (ext4 or erofs) into $target_dir, then delete the .img.
+# Runs without sudo: CI runners already execute as root, and local builds should
+# not silently escalate.
+#
+# Ghi thêm fstype per-partition vào bin/ddevice/fstype.<part>.txt để packROM.sh
+# pack đúng kiểu cho từng partition (ROM trộn EXT+EROFS sẽ sai nếu dùng 1 type chung).
 extract_partition() {
-    part_img=$1
-    part_name=$(basename ${part_img})
-    target_dir=$2
-    if [[ -f ${part_img} ]]; then 
-        if [[ $(${WORK_DIR}/bin/Linux/x86_64/gettype -i ${part_img}) == "ext" ]]; then
+    local part_img="$1"
+    local target_dir="$2"
+    local part_name pack_type img_type
+
+    [[ -f "$part_img" ]] || return 0
+
+    part_name=$(basename "$part_img" .img)
+    img_type=$("${WORK_DIR}/bin/Linux/x86_64/gettype" -i "$part_img")
+
+    case "$img_type" in
+        ext)
             pack_type="EXT"
-            echo $pack_type > ${WORK_DIR}/bin/ddevice/fstype.txt
-            sudo python3 ${WORK_DIR}/bin/imgextractor/imgextractor.py ${part_img} ${target_dir} >/dev/null 2>&1 || { error "Extracting ${part_name} failed."; exit 1; }
+            printf '%s\n' "$pack_type" > "${WORK_DIR}/bin/ddevice/fstype.txt"
+            printf '%s\n' "$pack_type" > "${WORK_DIR}/bin/ddevice/fstype.${part_name}.txt"
+            python3 "${WORK_DIR}/bin/imgextractor/imgextractor.py" "$part_img" "$target_dir" >/dev/null 2>&1 \
+                || die "Extracting ${part_name} failed."
             unpack "File ${part_name} extracted."
-            rm -rf ${part_img}      
-        elif [[ $(${WORK_DIR}/bin/Linux/x86_64/gettype -i ${part_img}) == "erofs" ]]; then
+            rm -f "$part_img"
+            ;;
+        erofs)
             pack_type="EROFS"
-            echo $pack_type > ${WORK_DIR}/bin/ddevice/fstype.txt
-            extract.erofs -x -i ${part_img} -o ${target_dir} > /dev/null 2>&1 || { error "Extracting ${part_name} failed." ; exit 1; }
+            printf '%s\n' "$pack_type" > "${WORK_DIR}/bin/ddevice/fstype.txt"
+            printf '%s\n' "$pack_type" > "${WORK_DIR}/bin/ddevice/fstype.${part_name}.txt"
+            extract.erofs -x -i "$part_img" -o "$target_dir" >/dev/null 2>&1 \
+                || die "Extracting ${part_name} failed."
             unpack "File ${part_name} extracted."
-            rm -rf ${part_img}
-        else
-            error "Unable to handle img, exit."
-            exit 1
-        fi
-    fi    
+            rm -f "$part_img"
+            ;;
+        *)
+            die "Unable to handle img (${part_name}, type='${img_type}'), exit."
+            ;;
+    esac
+}
+
+# Đọc kiểu FS của một partition cụ thể; fallback về fstype.txt nếu không có.
+pack_type_for() {
+    local part_name="$1"
+    local per_part="${WORK_DIR}/bin/ddevice/fstype.${part_name}.txt"
+    if [[ -f "$per_part" ]]; then
+        cat "$per_part"
+    elif [[ -f "${WORK_DIR}/bin/ddevice/fstype.txt" ]]; then
+        cat "${WORK_DIR}/bin/ddevice/fstype.txt"
+    else
+        echo "EROFS"
+    fi
 }
 
 setprop_rc() {

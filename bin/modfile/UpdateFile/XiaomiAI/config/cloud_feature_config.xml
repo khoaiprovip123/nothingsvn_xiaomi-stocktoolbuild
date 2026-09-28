@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  cloud_feature_config.xml — force-enable Xiaomi AI / premium features.
+  This override is merged into product/etc/device_features/ so the
+  feature checks pass regardless of region or server-side gating.
+-->
+<config>
+    <!-- ===== HyperOS AI engine ===== -->
+    <feature name="ai_engine" value="1" />
+    <feature name="xiao_ai" value="1" />
+    <feature name="ai_voice_assistant" value="1" />
+    <feature name="hyperos_ai_agent" value="1" />
+
+    <!-- ===== AI apps ===== -->
+    <feature name="ai_gallery" value="1" />
+    <feature name="ai_notes" value="1" />
+    <feature name="ai_search" value="1" />
+    <feature name="ai_eraser" value="1" />
+    <feature name="ai_translate" value="1" />
+    <feature name="ai_summary" value="1" />
+    <feature name="ai_subtitles" value="1" />
+    <feature name="ai_wallpaper" value="1" />
+
+    <!-- ===== Premium / flagship-only ===== -->
+    <feature name="premium_theme" value="1" />
+    <feature name="premium_icons" value="1" />
+    <feature name="advanced_texture" value="1" />
+    <feature name="aod_fullscreen" value="1" />
+    <feature name="high_refresh_rate" value="1" />
+    <feature name="dolby_atmos" value="1" />
+
+    <!-- ===== Camera AI (IMX766 on lisa) ===== -->
+    <feature name="camera_ai_scene" value="1" />
+    <feature name="camera_ai_super_resolution" value="1" />
+    <feature name="camera_ai_denoise" value="1" />
+    <feature name="camera_ai_portrait" value="1" />
+
+    <!-- ===== Cloud sync (needed for AI to work) ===== -->
+    <feature name="cloud_sync" value="1" />
+    <feature name="mi_cloud_ai" value="1" />
+</config>

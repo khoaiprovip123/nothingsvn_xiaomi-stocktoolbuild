@@ -19,6 +19,8 @@ case $device_code in
 	sky | xun) size=6979321856;;
 	#Redmi Note 12/13 13C
 	tapas | topaz | sapphire | sapphiren | gale | air | emerald_r | sea) size=7516192768;;
+	#Xiaomi 11 Lite 5G NE (lisa) · Xiaomi 11 Lite 4G (renoir) · Xiaomi 11 Lite 5G (courbet) — super 8.5GB
+	lisa | renoir | courbet) size=9126805504;;
 	#Redmi 12C
 	earth | breeze) size=7514095616;;
 	#Redmi Note 14 4G

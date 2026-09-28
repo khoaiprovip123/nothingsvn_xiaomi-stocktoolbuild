@@ -198,8 +198,11 @@ jobs:
 
       - name: Update Status to My-Assets
         if: always()
+        env:
+          # Override in repo secrets; defaults to the current owner's My-Assets.
+          MY_ASSETS_REPO: ${{ secrets.MY_ASSETS_REPO || format('{0}/My-Assets', github.repository_owner) }}
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/BEACHEADVN/My-Assets.git my-assets
+          git clone "https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${MY_ASSETS_REPO}.git" my-assets
           cd my-assets
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

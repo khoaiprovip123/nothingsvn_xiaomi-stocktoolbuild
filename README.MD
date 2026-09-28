@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # 🚀 NothingsVN AutoBuild — Xiaomi Edition
 
@@ -49,7 +49,7 @@
 ## 📁 Project Structure
 
 ```
-nothingsvn_xiaomi-toolbuild/
+nothingsvn_xiaomi-stocktoolbuild/
 ├── 📜 build.sh              # Main build orchestrator
 ├── 📜 functions.sh          # Shared utility functions
 ├── 📜 packROM.sh            # ROM packaging (super.img + partitions)
@@ -95,8 +95,8 @@ bash setup.sh
 
 ```bash
 # Clone the repository
-git clone https://github.com/tiencv2006/nothingsvn_xiaomi-toolbuild.git
-cd nothingsvn_xiaomi-toolbuild
+git clone https://github.com/BEACHEADVN/nothingsvn_xiaomi-stocktoolbuild.git
+cd nothingsvn_xiaomi-stocktoolbuild
 ```
 
 ```bash

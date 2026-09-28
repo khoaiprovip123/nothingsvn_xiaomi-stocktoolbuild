@@ -1,4 +1,4 @@
-work_dir=$(pwd)
+﻿work_dir=$(pwd)
 source $work_dir/functions.sh
 sdkLevel=$(cat $work_dir/bin/ddevice/sdkLevel.txt)
 deviceTYPE=$(cat $work_dir/bin/ddevice/device_type.txt)
@@ -17,8 +17,8 @@ jar_util()
     if [[ $1 == "d" ]]; then
         patch "Patching $2 : "
         if [[ -f $work_dir/build/baserom/images/system_ext/framework/miui-services.jar ]]; then
-            sudo cp $work_dir/build/baserom/images/system_ext/framework/miui-services.jar $work_dir/jar_temp
-            sudo chown $(whoami) $work_dir/jar_temp/$2
+            cp $work_dir/build/baserom/images/system_ext/framework/miui-services.jar $work_dir/jar_temp
+            chown $(whoami) $work_dir/jar_temp/$2
             unzip $work_dir/jar_temp/$2 -d $work_dir/jar_temp/$2.out  >/dev/null 2>&1
             if [[ -d $work_dir/jar_temp/"$2.out" ]]; then
                 rm -rf $work_dir/jar_temp/$2
@@ -57,7 +57,7 @@ jar_util()
                 #zip -r -j -0 $work_dir/jar_temp/$2_notal $work_dir/jar_temp/$2.out/.
                 zipalign 4 $work_dir/jar_temp/$2_notal $work_dir/jar_temp/$2
                 if [[ -f $work_dir/jar_temp/$2 ]]; then
-                    sudo cp -rf $work_dir/jar_temp/$2 $work_dir/build/baserom/images/system_ext/framework/miui-services.jar
+                    cp -rf $work_dir/jar_temp/$2 $work_dir/build/baserom/images/system_ext/framework/miui-services.jar
                     final_dir="$work_dir/module/*"
                     #7za a -tzip "$work_dir/miui-services_patched_$(date "+%d%m%y").zip" $final_dir
                     patch "Success"

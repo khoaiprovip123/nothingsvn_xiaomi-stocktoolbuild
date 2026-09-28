@@ -1,0 +1,38 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Build output (chỉ ở root — KHÔNG nuốt thư mục con trong bin/modfile)
+/out/
+/build/
+/app/
+/tmp/
+/config/
+
+# Secrets & tokens — never commit
+token.pickle
+*.token
+.env
+.env.*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+build_action.log
+
+# Smoke tests (scratch, không commit)
+_smoke_*.sh
+
+# graphify output (build cache, không commit)
+graphify-out/
+
+# APK vượt giới hạn 100MB của GitHub (không commit — cần host riêng)
+bin/modfile/UpdateFile/ReplaceApps/apks/HolyBear_5.0.230706.0_release.apk
+bin/modfile/UpdateFile/ReplaceApps/apks/SecurityMod_v13.5.3_PeaceModss.apk
+bin/modfile/UpdateFile/MultiLang/updatesource/Nothings.SecurityCenter.apk
