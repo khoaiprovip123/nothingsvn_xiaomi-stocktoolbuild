@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # packROM.sh — rebuild partition images and pack them into super.img.
 # Run after build.sh has finished modifying build/baserom/images/.
 set -euo pipefail
@@ -16,14 +16,14 @@ source "$work_dir/functions.sh"
 # Phải khớp với super_list trong build.sh (payload path) — thiếu partition ở đây
 # nghĩa là partition được extract nhưng KHÔNG được pack lại vào super.img → boot fail.
 super_list="vendor mi_ext odm odm_dlkm system system_dlkm vendor_dlkm product product_dlkm system_ext mi_product"
-os_type=$(cat "$work_dir/bin/ddevice/os_type.txt")
-base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt")
-androidVER=$(cat "$work_dir/bin/ddevice/androidver.txt")
-rom_os=$(cat "$work_dir/bin/ddevice/rom_os.txt")
-regionTYPE=$(cat "$work_dir/bin/ddevice/device_type.txt")
-device_code=$(cat "$work_dir/bin/ddevice/device_f.txt")
-getvar=$(cat "$work_dir/bin/ddevice/device_f.txt")
-PACK_TYPE=$(cat "$work_dir/bin/ddevice/fstype.txt")
+os_type=$(cat "$work_dir/bin/ddevice/os_type.txt") || true
+base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt") || true
+androidVER=$(cat "$work_dir/bin/ddevice/androidver.txt") || true
+rom_os=$(cat "$work_dir/bin/ddevice/rom_os.txt") || true
+regionTYPE=$(cat "$work_dir/bin/ddevice/device_type.txt") || true
+device_code=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
+getvar=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
+PACK_TYPE=$(cat "$work_dir/bin/ddevice/fstype.txt") || true
 
 if [[ "$(git branch --show-current 2>/dev/null || true)" == "beta" ]]; then
     polyxver="$(cat Version)"

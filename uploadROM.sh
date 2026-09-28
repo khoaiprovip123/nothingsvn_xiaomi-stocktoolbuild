@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # uploadROM.sh — package the flashable zip and upload it.
 # Usage:
 #   bash uploadROM.sh setup <GH_TOKEN> <GH_REPO> <RCLONE_TOKEN_PATH>
@@ -21,14 +21,14 @@ ONEDRIVE_REMOTE="nothings-toolbuild"
 # Google Drive destination — override via env, never hardcode a secret-ish ID.
 : "${GDRIVE_FOLDER_ID:=1Ezo6s99nX70l_wV24WAzr_A4t4WpFdSx}"
 
-os_type=$(cat "$work_dir/bin/ddevice/os_type.txt")
-base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt")
-androidVER=$(cat "$work_dir/bin/ddevice/androidver.txt")
-rom_os=$(cat "$work_dir/bin/ddevice/rom_os.txt")
-regionTYPE=$(cat "$work_dir/bin/ddevice/device_type.txt")
-device_code=$(cat "$work_dir/bin/ddevice/device_code.txt")
-baserom_type=$(cat "$work_dir/bin/ddevice/romtype.txt")
-device_f=$(cat "$work_dir/bin/ddevice/device_f.txt")
+os_type=$(cat "$work_dir/bin/ddevice/os_type.txt") || true
+base_rom_code=$(cat "$work_dir/bin/ddevice/base_rom_code.txt") || true
+androidVER=$(cat "$work_dir/bin/ddevice/androidver.txt") || true
+rom_os=$(cat "$work_dir/bin/ddevice/rom_os.txt") || true
+regionTYPE=$(cat "$work_dir/bin/ddevice/device_type.txt") || true
+device_code=$(cat "$work_dir/bin/ddevice/device_code.txt") || true
+baserom_type=$(cat "$work_dir/bin/ddevice/romtype.txt") || true
+device_f=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
 
 if [ "${1:-}" == "setup" ]; then
   if [ -z "${2:-}" ] || [ -z "${3:-}" ] || [ -z "${4:-}" ]; then

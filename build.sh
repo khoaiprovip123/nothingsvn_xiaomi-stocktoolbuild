@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # build.sh — download / unpack / modify a Xiaomi stock ROM.
 # Usage: bash build.sh <URL_OR_PATH_TO_ROM.zip> [repo_name] [prefix_id] [builder_name] [builder_id]
 set -euo pipefail
@@ -124,7 +124,7 @@ fi
 
 for part in ${super_list}; do
     extract_partition "${work_dir}/build/baserom/images/${part}.img" "${work_dir}/build/baserom/images"
-    PACK_TYPE=$(cat "${work_dir}/bin/ddevice/fstype.txt")
+    PACK_TYPE=$(cat "${work_dir}/bin/ddevice/fstype.txt") || true
 done
 printf '%s\n' "${device_f:-}" > "$work_dir/bin/ddevice/device_f.txt"
 
@@ -143,15 +143,16 @@ fi
 printf '%s\n' "$structure" > "$META_DATA/A"
 
 # Chip = chipset (update-binary chỉ cho phép Qualcomm/Snapdragon).
+# || true là BẮT BUỘC: grep không match trả exit 1, pipefail + set -e sẽ kill script.
 chip_hint="qcom"
 if [[ -f "$work_dir/build/baserom/images/vendor/build.prop" ]]; then
-    board=$(grep -E '^ro\.board\.platform=' "$work_dir/build/baserom/images/vendor/build.prop" 2>/dev/null | head -n1 | cut -d= -f2)
-    hw=$(grep -E '^ro\.hardware=' "$work_dir/build/baserom/images/vendor/build.prop" 2>/dev/null | head -n1 | cut -d= -f2)
+    board=$(grep -E '^ro\.board\.platform=' "$work_dir/build/baserom/images/vendor/build.prop" 2>/dev/null | head -n1 | cut -d= -f2 || true)
+    hw=$(grep -E '^ro\.hardware=' "$work_dir/build/baserom/images/vendor/build.prop" 2>/dev/null | head -n1 | cut -d= -f2 || true)
     chip_hint="${board:-qcom} ${hw:-}"
 fi
 printf '%s\n' "$chip_hint" > "$META_DATA/Chip"
 
-getvar=$(cat "$work_dir/bin/ddevice/device_f.txt")
+getvar=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
 
 rm -rf config
 
