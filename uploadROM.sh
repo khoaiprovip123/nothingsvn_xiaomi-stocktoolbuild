@@ -84,56 +84,43 @@ else
     os_type="HyperOS"
 fi
 
-repack "Generating flashing script"
+repack "Generating clean ROM structure..."
 out_dir="${work_dir}/out/${os_type}_${device_code}_${base_rom_code}"
+rm -rf "$out_dir"
+
+# Cấu trúc ROM gọn:
+#   firmware-update/  = các .img hệ thống (modem, boot, vbmeta, dtbo...)
+#   super/            = super.img
+#   bin/              = fastboot.exe, adb.exe, DLL
+#   flash.bat         = file nạp DUY NHẤT
 if [[ ${baserom_type} == 'payload' ]]; then
-    mkdir -p "${out_dir}/images/" "${out_dir}/super/"
-    mv -f "$work_dir/build/baserom/images/super.img" "${out_dir}/super/"
-    mv -f "$work_dir/build/baserom/images/"*.img "${out_dir}/images/"
+    mkdir -p "$out_dir/firmware-update/" "$out_dir/super/" "$out_dir/bin/"
+    mv -f "$work_dir/build/baserom/images/super.img" "$out_dir/super/"
+    mv -f "$work_dir/build/baserom/images/"*.img "$out_dir/firmware-update/"
 elif [[ ${baserom_type} == 'br' ]]; then
-    mkdir -p "${out_dir}/images/"
-    mv -f "$work_dir/build/baserom/firmware-update/"* "${out_dir}/images/"
-    mv -f "$work_dir/build/baserom/images/super.img" "${out_dir}/super/"
+    mkdir -p "$out_dir/firmware-update/" "$out_dir/super/" "$out_dir/bin/"
+    mv -f "$work_dir/build/baserom/firmware-update/"* "$out_dir/firmware-update/"
+    mv -f "$work_dir/build/baserom/images/super.img" "$out_dir/super/"
 fi
 
-cp -f "$work_dir/bin/script2flash/cust.img" "${out_dir}/images/" 2>/dev/null || true
-# KHÔNG copy .install — không cần thiết, gây rối user.
+# Copy cust.img vào firmware-update (nếu có).
+cp -f "$work_dir/bin/script2flash/cust.img" "$out_dir/firmware-update/" 2>/dev/null || true
 
-# Copy file nạp FASTBOOT + firmware flasher.
-for flasher in flash_fastboot.bat flash_fastboot.sh flash_firmware.bat; do
-    if [[ -f "$work_dir/bin/script2flash/$flasher" ]]; then
-        cp -f "$work_dir/bin/script2flash/$flasher" "${out_dir}/"
-        chmod +x "${out_dir}/$flasher" 2>/dev/null || true
-        info "Flasher added: $flasher"
-    fi
-done
-
-# Copy công cụ ADB + Fastboot + DLL vào ROM — user không cần tải thêm.
+# Công cụ nạp vào bin/ — user không cần tải thêm.
 for tool in fastboot.exe adb.exe AdbWinApi.dll AdbWinUsbApi.dll; do
-    if [[ -f "$work_dir/bin/script2flash/$tool" ]]; then
-        cp -f "$work_dir/bin/script2flash/$tool" "${out_dir}/"
-        info "Tool added: $tool"
-    fi
+    [[ -f "$work_dir/bin/script2flash/$tool" ]] && cp -f "$work_dir/bin/script2flash/$tool" "$out_dir/bin/"
 done
+info "bin/ tools added (fastboot + adb + DLL)"
 
-# BẮT BUỘC: copy META-INF/ (update-binary + bin + Data) vào zip — thiếu thì
-# zip không flash được bằng recovery (không có update-binary).
-if [[ -d "$work_dir/bin/script2flash/META-INF" ]]; then
-    rm -rf "${out_dir}/META-INF"
-    cp -rf "$work_dir/bin/script2flash/META-INF" "${out_dir}/META-INF"
-    # Đảm bảo update-binary có quyền thực thi trong zip.
-    chmod 755 "${out_dir}/META-INF/com/google/android/update-binary" 2>/dev/null || true
-    info "META-INF (recovery flasher) added to ROM"
-else
-    die "script2flash/META-INF missing — ROM would not be flashable"
+# CHỈ 1 file nạp: flash.bat (tự dùng bin\fastboot.exe, ghi log).
+if [[ -f "$work_dir/bin/script2flash/flash.bat" ]]; then
+    cp -f "$work_dir/bin/script2flash/flash.bat" "$out_dir/"
+    info "flash.bat added (single flasher with log)"
 fi
 
-# Ghi BUILD_INFO.txt vào ROM zip — để biết build này từ nguồn nào, mod nào.
+# BUILD_INFO.txt — thông tin build (không phải file nạp, chỉ để xem).
 bash "$work_dir/bin/ddevice/genBuildInfo.sh"
-if [[ -f "$work_dir/build/baserom/BUILD_INFO.txt" ]]; then
-    cp -f "$work_dir/build/baserom/BUILD_INFO.txt" "${out_dir}/"
-    info "BUILD_INFO.txt added to ROM"
-fi
+[[ -f "$work_dir/build/baserom/BUILD_INFO.txt" ]] && cp -f "$work_dir/build/baserom/BUILD_INFO.txt" "$out_dir/"
 
 find "${out_dir}" | xargs touch
 pushd "${out_dir}" >/dev/null || exit 1
