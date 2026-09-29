@@ -32,19 +32,22 @@ device_f=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
 
 if [ "${1:-}" == "setup" ]; then
   # Cách 1 (KHUYẾN NGHỊ): giải mã token từ biến GDRIVE_TOKEN_B64 (GitHub Secret).
+  # Loại bỏ whitespace/newline trước khi decode — GitHub Secrets hay thêm xuống dòng.
   if [ -n "${GDRIVE_TOKEN_B64:-}" ]; then
-    printf '%s' "$GDRIVE_TOKEN_B64" | base64 -d > "$work_dir/token.pickle"
-    if [[ -s "$work_dir/token.pickle" ]]; then
-      info "token.pickle restored from GDRIVE_TOKEN_B64 secret."
+    printf '%s' "$GDRIVE_TOKEN_B64" | tr -d '[:space:]' | base64 -d > "$work_dir/token.pickle" 2>/dev/null || true
+    # Kiểm tra token hợp lệ bằng Python (tránh pickle rỗng gây EOFError).
+    if python3 -c "import pickle; pickle.load(open('$work_dir/token.pickle','rb'))" 2>/dev/null; then
+      info "token.pickle restored and validated from GDRIVE_TOKEN_B64 secret."
       exit 0
     fi
-    warn "GDRIVE_TOKEN_B64 decode failed — trying fallback."
+    warn "GDRIVE_TOKEN_B64 decode/validate failed — trying fallback."
+    rm -f "$work_dir/token.pickle"
   fi
 
   # Cách 2 (cũ): tải token.pickle từ repo riêng qua GH_TOKEN.
   if [ -z "${2:-}" ] || [ -z "${3:-}" ] || [ -z "${4:-}" ]; then
-    warn "Thiếu GDRIVE_TOKEN_B64 / GH_TOKEN — bỏ qua thiết lập upload."
-    warn "  (Cấu hình GitHub Secret GDRIVE_TOKEN_B64 nếu muốn upload Google Drive.)"
+    warn "Thiếu GDRIVE_TOKEN_B64 hợp lệ / GH_TOKEN — bỏ qua thiết lập upload."
+    warn "  (Kiểm tra Secret GDRONE_TOKEN_B64: phải là base64 ĐẦY ĐỦ của token.pickle.)"
     exit 0
   fi
   curl -s -o "$work_dir/rclone.conf" \
