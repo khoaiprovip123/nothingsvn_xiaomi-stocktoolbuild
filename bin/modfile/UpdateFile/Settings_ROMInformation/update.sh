@@ -1,4 +1,4 @@
-WORK_DIR=$(pwd)
+﻿WORK_DIR=$(pwd)
 source $WORK_DIR/functions.sh
 MAIN_FOLDER="$WORK_DIR/build/baserom/images"
 rom_os=$(cat $WORK_DIR/bin/ddevice/rom_os.txt)
@@ -66,7 +66,7 @@ mods "Add ROM Information To HyperOS"
   mods "Updating build.prop"
   echo "ro.nothings.version=NothingsOS $myversion | $final_version" >> $my
   echo "ro.nothings.osversion=${simposcode}.${build_date}" >> $my
-  echo "ro.nothings.simposcode=By NothingsVN $myversion" >> $my
+  echo "ro.ktos.simposcode=By KTOS $myversion" >> $my
 
   mods "Rebuild..."
   Settings=$(basename $isSettings)

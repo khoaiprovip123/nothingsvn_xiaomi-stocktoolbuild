@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-# 🚀 NothingsVN AutoBuild — Xiaomi Edition
+# 🚀 KTOS Build — Xiaomi Edition
 
 **Xiaomi Custom ROM Builder** — *Automated MIUI / HyperOS firmware modification pipeline*
 
@@ -95,7 +95,7 @@ bash setup.sh
 
 ```bash
 # Clone the repository
-git clone https://github.com/BEACHEADVN/nothingsvn_xiaomi-stocktoolbuild.git
+git clone https://github.com/khoaiprovip123/nothingsvn_xiaomi-stocktoolbuild.git
 cd nothingsvn_xiaomi-stocktoolbuild
 ```
 
@@ -206,7 +206,7 @@ This project is licensed under the **GNU General Public License v3.0** — see t
 
 <div align="center">
 
-**Made with ❤️ by the NothingsVN community**
+**Made with ❤️ by the KTOS community**
 
 *⭐ Star this repo if you find it useful!*
 

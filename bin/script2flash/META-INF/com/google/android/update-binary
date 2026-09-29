@@ -1,5 +1,5 @@
-#!/sbin/sh
-# update-binary — recovery flasher cho ROM NothingsVN (Xiaomi, chip Qualcomm).
+﻿#!/sbin/sh
+# update-binary — recovery flasher cho ROM KTOS (Xiaomi, chip Qualcomm).
 # Cách dùng trong recovery: flash file .zip chứa images/ + super/ + META-INF/.
 #
 # Sửa các lỗi trước đây:

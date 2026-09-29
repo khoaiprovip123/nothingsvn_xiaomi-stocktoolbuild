@@ -1,10 +1,10 @@
-@echo off
+﻿@echo off
 setlocal enabledelayedexpansion
 chcp 65001 >nul
-title NothingsVN — Fastboot Flasher (Xiaomi)
+title KTOS — Fastboot Flasher (Xiaomi)
 
 :: ============================================================
-::  flash_fastboot.bat — nạp ROM NothingsVN qua FASTBOOT
+::  flash_fastboot.bat — nạp ROM KTOS qua FASTBOOT
 ::  (không dùng recovery — dành cho máy đã unlock bootloader)
 ::
 ::  Cách dùng:
@@ -20,7 +20,7 @@ set "SUPER_DIR=%SCRIPT_DIR%super"
 
 echo.
 echo ============================================================
-echo   NothingsVN ROM Flasher — FASTBOOT mode
+echo   KTOS ROM Flasher — FASTBOOT mode
 echo ============================================================
 echo.
 

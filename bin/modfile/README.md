@@ -1,4 +1,4 @@
-﻿# Mod layout — NothingsVN Xiaomi Stock Toolbuild
+﻿# Mod layout — KTOS Xiaomi Stock Toolbuild
 
 ```
 bin/modfile/

@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 import html
 import random
@@ -661,7 +661,7 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
             }[status]
             pm_lines = [f"<b>{escape(pm_title)}</b>", "", message]
             if status == "success":
-                pm_lines.extend(["", "<b>Tải ROM:</b> <a href=\"https://nothingsvn.vercel.app/\">nothingsvn.vercel.app</a>"])
+                pm_lines.extend(["", "<b>Tải ROM:</b> <a href=\"https://ktos.vercel.app/\">ktos.vercel.app</a>"])
             elif status == "fail":
                 pm_lines.extend(["", "<b>Log lỗi:</b> file .txt sẽ được gửi riêng ngay sau tin nhắn này nếu tìm thấy log."])
             else:

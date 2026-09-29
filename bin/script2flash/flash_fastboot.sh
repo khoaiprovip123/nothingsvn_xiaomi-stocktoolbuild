@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-# flash_fastboot.sh — nạp ROM NothingsVN qua FASTBOOT (Linux/Mac).
+﻿#!/usr/bin/env bash
+# flash_fastboot.sh — nạp ROM KTOS qua FASTBOOT (Linux/Mac).
 # Dùng cho máy đã unlock bootloader, KHÔNG dùng recovery.
 #
 # Cách dùng:
@@ -14,7 +14,7 @@ SUPER_DIR="$SCRIPT_DIR/super"
 
 echo ""
 echo "============================================================"
-echo "  NothingsVN ROM Flasher — FASTBOOT mode"
+echo "  KTOS ROM Flasher — FASTBOOT mode"
 echo "============================================================"
 echo ""
 
