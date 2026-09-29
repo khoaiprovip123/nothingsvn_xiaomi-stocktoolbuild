@@ -1,4 +1,4 @@
-﻿work_dir=$(pwd)
+work_dir=$(pwd)
 MAIN_FOLDER="$work_dir/build/baserom/images"
 source $work_dir/functions.sh
 device_code=$(cat $work_dir/bin/ddevice/device_f.txt)

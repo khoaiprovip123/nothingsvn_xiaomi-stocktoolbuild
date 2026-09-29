@@ -30,6 +30,9 @@ while IFS= read -r -d '' script; do
         continue
     fi
     if ! bash "$script"; then
+        if [[ "$script" == "$TARGET_DIR/MultiLang/update.sh" ]]; then
+            die "Critical mod failed: $script"
+        fi
         warn "Mod script failed (continuing): $script"
     fi
 done < <(find "$TARGET_DIR" -type f -name '*.sh' -print0)

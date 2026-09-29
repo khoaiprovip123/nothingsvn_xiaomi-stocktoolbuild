@@ -1,4 +1,4 @@
-﻿#xu-ly-device_code
+#xu-ly-device_code
 baserom="$1"
 work_dir=$(pwd)
 source $work_dir/functions.sh

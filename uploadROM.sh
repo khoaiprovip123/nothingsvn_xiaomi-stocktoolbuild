@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # uploadROM.sh — package the flashable zip and upload it.
 # Usage:
 #   bash uploadROM.sh setup <GH_TOKEN> <GH_REPO> <RCLONE_TOKEN_PATH>
@@ -97,14 +97,22 @@ elif [[ ${baserom_type} == 'br' ]]; then
 fi
 
 cp -f "$work_dir/bin/script2flash/cust.img" "${out_dir}/images/" 2>/dev/null || true
-cp -f "$work_dir/bin/script2flash/"*.install "${out_dir}/" 2>/dev/null || true
+# KHÔNG copy .install — không cần thiết, gây rối user.
 
-# Copy file nạp FASTBOOT vào output (user nạp bằng fastboot, không dùng recovery).
-for flasher in flash_fastboot.bat flash_fastboot.sh; do
+# Copy file nạp FASTBOOT + firmware flasher.
+for flasher in flash_fastboot.bat flash_fastboot.sh flash_firmware.bat; do
     if [[ -f "$work_dir/bin/script2flash/$flasher" ]]; then
         cp -f "$work_dir/bin/script2flash/$flasher" "${out_dir}/"
         chmod +x "${out_dir}/$flasher" 2>/dev/null || true
         info "Flasher added: $flasher"
+    fi
+done
+
+# Copy công cụ ADB + Fastboot + DLL vào ROM — user không cần tải thêm.
+for tool in fastboot.exe adb.exe AdbWinApi.dll AdbWinUsbApi.dll; do
+    if [[ -f "$work_dir/bin/script2flash/$tool" ]]; then
+        cp -f "$work_dir/bin/script2flash/$tool" "${out_dir}/"
+        info "Tool added: $tool"
     fi
 done
 

@@ -1,0 +1,1 @@
+﻿MiuiCamera,MiuiGallery,Settings,MiuiHome,MiuiSystemUI,MiuiSystemUIPlugin,SecurityCenter,Permissioncontroller,Bluetooth,Telecom,TeleService,Contacts,ContactsProvider,Mms,InCallUI,HyperPhoneSystemUI,Provision,PowerKeeper,AuthManager,VpnDialogs,CaptivePortalLogin

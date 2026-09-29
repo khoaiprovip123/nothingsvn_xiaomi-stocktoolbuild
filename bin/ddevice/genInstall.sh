@@ -1,4 +1,4 @@
-﻿#chinh-sua-genInstall.sh
+#chinh-sua-genInstall.sh
 #!/bin/bash
 work_dir=$(pwd)
 

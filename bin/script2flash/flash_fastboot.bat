@@ -1,139 +1,94 @@
-﻿@echo off
+@echo off
 setlocal enabledelayedexpansion
-chcp 65001 >nul
-title KTOS — Fastboot Flasher (Xiaomi)
+chcp 437 >nul
+title KTOS ROM Flasher - FULL (all partitions)
 
 :: ============================================================
-::  flash_fastboot.bat — nạp ROM KTOS qua FASTBOOT
-::  (không dùng recovery — dành cho máy đã unlock bootloader)
-::
-::  Cách dùng:
-::    1. Cài Android platform-tools (adb + fastboot) vào PATH
-::    2. Đưa máy vào chế độ FASTBOOT (tắt nguồn → giữ Giảm âm + Nguồn)
-::    3. Copy file .bat này + thư mục images/ + super/ vào cùng chỗ
-::    4. Chạy:  flash_fastboot.bat
+::  flash_fastboot.bat - Flash FULL ROM (ALL partitions)
+::  Includes firmware (modem, bluetooth, dsp, tz...) so SIM/WiFi/BT work.
 :: ============================================================
 
 set "SCRIPT_DIR=%~dp0"
 set "IMG_DIR=%SCRIPT_DIR%images"
 set "SUPER_DIR=%SCRIPT_DIR%super"
+set "FB=%SCRIPT_DIR%fastboot.exe"
+if not exist "%FB%" set "FB=fastboot"
 
 echo.
 echo ============================================================
-echo   KTOS ROM Flasher — FASTBOOT mode
+echo   KTOS ROM Flasher - FULL (firmware + system)
 echo ============================================================
 echo.
 
-:: --- 1. Kiểm tra fastboot ---
-where fastboot >nul 2>&1
-if errorlevel 1 (
-    echo [LOI] Khong tim thay 'fastboot' trong PATH.
-    echo       Cai Android platform-tools: https://developer.android.com/tools/releases/platform-tools
+:: --- 1. Check fastboot ---
+where %FB% >nul 2>&1
+if errorlevel 1 if "%FB%"=="fastboot" (
+    echo [ERROR] fastboot not found.
     pause
     exit /b 1
 )
+echo       Using: %FB%
 
-:: --- 2. Kiểm tra thiết bị ---
-echo [1/6] Kiem tra ket noi fastboot...
-fastboot devices | findstr /r /c:"fastboot" >nul 2>&1
+:: --- 2. Check device ---
+echo [1/4] Checking fastboot connection...
+"%FB%" devices | findstr /r /c:"fastboot" >nul 2>&1
 if errorlevel 1 (
-    echo [LOI] Khong thay thiet bi fastboot.
-    echo       Hay dua may vao che do FASTBOOT roi ket noi USB.
+    echo [ERROR] No fastboot device. Boot into FASTBOOT + connect USB.
     pause
     exit /b 1
 )
-for /f "tokens=1" %%d in ('fastboot devices') do set "SERIAL=%%d"
-echo       Thiet bi: %SERIAL%
+for /f "tokens=1" %%d in ('"%FB%" devices') do set "SERIAL=%%d"
+echo       Device: %SERIAL%
 
-:: --- 3. Kiểm tra file ROM ---
-echo [2/6] Kiem tra file ROM...
+:: --- 3. Check ROM ---
+echo [2/4] Checking ROM files...
 set "MISSING=0"
-for %%f in (vbmeta boot dtbo) do (
+if exist "%SUPER_DIR%\super.img" (echo       [OK] super\super.img) else (echo       [MISSING] super.img & set "MISSING=1")
+if exist "%IMG_DIR%\boot.img" (echo       [OK] boot.img) else (echo       [MISSING] boot.img & set "MISSING=1")
+if exist "%IMG_DIR%\vbmeta.img" (echo       [OK] vbmeta.img) else (echo       [MISSING] vbmeta.img & set "MISSING=1")
+if exist "%IMG_DIR%\modem.img" (echo       [OK] modem.img) else (echo       [!!] modem.img - SIM se khong hoat dong)
+if "!MISSING!"=="1" (echo [ERROR] Missing critical files. & pause & exit /b 1)
+
+echo.
+echo  WARNING: Flash ALL partitions (firmware + system).
+echo  Device MUST have unlocked bootloader.
+echo.
+set /p "CONFIRM=Flash full ROM? (y/N): "
+if /i not "!CONFIRM!"=="y" (echo Cancelled. & pause & exit /b 0)
+
+:: --- 4. FLASH EVERYTHING ---
+echo.
+echo [3/4] Flashing FIRMWARE (modem/bluetooth/dsp/tz/xbl...)...
+for %%f in (modem bluetooth dsp tz xbl xbl_config abl aop hyp cpucp devcfg featenabler imagefv keymaster qupfw shrm uefisecapp cust) do (
     if exist "%IMG_DIR%\%%f.img" (
-        echo       [OK] images\%%f.img
-    ) else (
-        echo       [THIEU] images\%%f.img
-        set "MISSING=1"
+        echo       %%f.img
+        "%FB%" flash %%f "%IMG_DIR%\%%f.img"
     )
 )
-if exist "%SUPER_DIR%\super.img" (
-    echo       [OK] super\super.img
-) else (
-    echo       [THIEU] super\super.img
-    set "MISSING=1"
-)
-if "!MISSING!"=="1" (
-    echo [LOI] Thieu file ROM. Hay kiem tra lai thu muc images\ va super\.
-    pause
-    exit /b 1
-)
 
-:: --- 4. Xác nhận ---
 echo.
-echo  CHU Y:
-echo    - May PHAI da unlock bootloader.
-echo    - Flash ROM sai may co the gay BRICK.
-echo    - Se flash: vbmeta, boot, dtbo, vendor_boot (neu co), super.
-echo.
-set /p "CONFIRM=Ban co chac chan flash? (y/N): "
-if /i not "!CONFIRM!"=="y" (
-    echo Da huy.
-    pause
-    exit /b 0
-)
+echo       Flashing vbmeta (disable verity)...
+"%FB%" --disable-verity --disable-verification flash vbmeta "%IMG_DIR%\vbmeta.img"
+if exist "%IMG_DIR%\vbmeta_system.img" "%FB%" --disable-verity --disable-verification flash vbmeta_system "%IMG_DIR%\vbmeta_system.img"
 
-:: --- 5. Flash vbmeta (TAT xac minh — bat buoc cho ROM da sua) ---
 echo.
-echo [3/6] Flash vbmeta (disable verity + verification)...
-fastboot --disable-verity --disable-verification flash vbmeta "%IMG_DIR%\vbmeta.img"
+echo [4/4] Flashing SYSTEM (boot/dtbo/vendor_boot/super)...
+if exist "%IMG_DIR%\boot.img" "%FB%" flash boot "%IMG_DIR%\boot.img"
+if exist "%IMG_DIR%\dtbo.img" "%FB%" flash dtbo "%IMG_DIR%\dtbo.img"
+if exist "%IMG_DIR%\vendor_boot.img" "%FB%" flash vendor_boot "%IMG_DIR%\vendor_boot.img"
+if exist "%IMG_DIR%\init_boot.img" "%FB%" flash init_boot "%IMG_DIR%\init_boot.img"
+echo       Flashing super.img (this takes a few minutes)...
+"%FB%" flash super "%SUPER_DIR%\super.img"
 if errorlevel 1 (
-    echo [LOI] Flash vbmeta that bai.
-    pause
-    exit /b 1
-)
-if exist "%IMG_DIR%\vbmeta_system.img" (
-    fastboot --disable-verity --disable-verification flash vbmeta_system "%IMG_DIR%\vbmeta_system.img"
-    echo       Da flash vbmeta_system.
-)
-
-:: --- 6. Flash firmware ---
-echo [4/6] Flash firmware...
-if exist "%IMG_DIR%\boot.img" (
-    fastboot flash boot "%IMG_DIR%\boot.img"
-)
-if exist "%IMG_DIR%\dtbo.img" (
-    fastboot flash dtbo "%IMG_DIR%\dtbo.img"
-)
-if exist "%IMG_DIR%\vendor_boot.img" (
-    fastboot flash vendor_boot "%IMG_DIR%\vendor_boot.img"
-)
-if exist "%IMG_DIR%\init_boot.img" (
-    fastboot flash init_boot "%IMG_DIR%\init_boot.img"
-)
-
-:: --- 7. Flash super ---
-echo [5/6] Flash super (he thong)...
-echo       *(Neu loi, thu chay: fastboot reboot fastboot  roi chay lai file nay)*
-fastboot flash super "%SUPER_DIR%\super.img"
-if errorlevel 1 (
-    echo.
-    echo [CANH BAO] Flash super loi. Thu flash super tu fastbootd:
-    echo       fastboot reboot fastboot
-    echo       fastboot flash super "%SUPER_DIR%\super.img"
-    echo       fastboot reboot
+    echo [WARNING] super failed. Try: fastboot reboot fastboot, then flash super.
     pause
     exit /b 1
 )
 
-:: --- 8. Hoan tat ---
-echo [6/6] Hoan tat! Khoi dong lai may...
-fastboot reboot
 echo.
 echo ============================================================
-echo   Flash xong! May se khoi dong lai.
-echo   * Neu bootloop: format data trong recovery, hoac xem
-echo     docs\BOOT_TROUBLESHOOTING.md
+echo   FULL flash complete! Rebooting... SIM/WiFi/BT should work.
 echo ============================================================
-echo.
+"%FB%" reboot
 pause
 exit /b 0

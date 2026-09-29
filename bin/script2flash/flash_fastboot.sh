@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # flash_fastboot.sh — nạp ROM KTOS qua FASTBOOT (Linux/Mac).
 # Dùng cho máy đã unlock bootloader, KHÔNG dùng recovery.
 #

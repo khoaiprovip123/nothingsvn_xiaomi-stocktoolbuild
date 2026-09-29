@@ -1,4 +1,4 @@
-﻿WORK_DIR=$(pwd)
+WORK_DIR=$(pwd)
 source $WORK_DIR/functions.sh
 MAIN_FOLDER="$WORK_DIR/build/baserom/images"
 rom_os=$(cat $WORK_DIR/bin/ddevice/rom_os.txt)

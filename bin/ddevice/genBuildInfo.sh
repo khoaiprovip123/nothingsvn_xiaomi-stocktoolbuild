@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # genBuildInfo.sh — sinh file BUILD_INFO.txt ghi rõ ROM này được build từ gì.
 # Chạy sau khi build xong, trước khi pack zip → file nằm trong ROM zip.
 set -euo pipefail
