@@ -21,6 +21,24 @@ SYSAPP="$IMAGE_ROOT/product/app"
 [[ -d "$IMAGE_ROOT" ]] || { warn "No image root — ReplaceApps skipped"; exit 0; }
 [[ -d "$SRC" ]] || { warn "ReplaceApps apks folder missing"; exit 0; }
 
+# --- Tải APK lớn (>100MB, bị gitignore) từ GitHub Release nếu thiếu ---
+# HolyBear & SecurityMod không commit vào git (vượt giới hạn 100MB).
+# CI sẽ tải từ Release 'rom-assets' lúc build.
+REPO="${GITHUB_REPOSITORY:-khoaiprovip123/nothingsvn_xiaomi-stocktoolbuild}"
+download_large_apk() {
+    local fname="$1"
+    local dest="$SRC/$fname"
+    [[ -f "$dest" ]] && return 0
+    info "Downloading large APK from release: $fname"
+    curl -fsSL -o "$dest" \
+        "https://github.com/${REPO}/releases/download/rom-assets/${fname}" \
+        && info "Downloaded: $fname ($(du -h "$dest" | cut -f1))" \
+        || warn "Could not download $fname (optional — skipping)"
+}
+download_large_apk "SecurityMod_v13.5.3_PeaceModss.apk"
+# HolyBear (camera mod) — bỏ qua theo yêu cầu, nhưng vẫn tải nếu muốn:
+# download_large_apk "HolyBear_5.0.230706.0_release.apk"
+
 mods "ReplaceApps: installing mod APKs (no root, baked into product/)"
 
 # install_apk <source.apk> <AppName> [dest=priv-app]
