@@ -31,10 +31,20 @@ baserom_type=$(cat "$work_dir/bin/ddevice/romtype.txt") || true
 device_f=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
 
 if [ "${1:-}" == "setup" ]; then
+  # Cách 1 (KHUYẾN NGHỊ): giải mã token từ biến GDRIVE_TOKEN_B64 (GitHub Secret).
+  if [ -n "${GDRIVE_TOKEN_B64:-}" ]; then
+    printf '%s' "$GDRIVE_TOKEN_B64" | base64 -d > "$work_dir/token.pickle"
+    if [[ -s "$work_dir/token.pickle" ]]; then
+      info "token.pickle restored from GDRIVE_TOKEN_B64 secret."
+      exit 0
+    fi
+    warn "GDRIVE_TOKEN_B64 decode failed — trying fallback."
+  fi
+
+  # Cách 2 (cũ): tải token.pickle từ repo riêng qua GH_TOKEN.
   if [ -z "${2:-}" ] || [ -z "${3:-}" ] || [ -z "${4:-}" ]; then
-    # Upload credentials là TÙY CHỌN — thiếu thì bỏ qua, không kill build.
-    warn "Thiếu GH_TOKEN/GH_REPO/RCLONE_TOKEN_PATH — bỏ qua thiết lập upload."
-    warn "  (Cấu hình GitHub Secrets nếu muốn upload Google Drive / OneDrive.)"
+    warn "Thiếu GDRIVE_TOKEN_B64 / GH_TOKEN — bỏ qua thiết lập upload."
+    warn "  (Cấu hình GitHub Secret GDRIVE_TOKEN_B64 nếu muốn upload Google Drive.)"
     exit 0
   fi
   curl -s -o "$work_dir/rclone.conf" \

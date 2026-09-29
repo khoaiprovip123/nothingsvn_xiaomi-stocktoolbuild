@@ -95,6 +95,8 @@ jobs:
 
       - name: Set up Rclone
         continue-on-error: true
+        env:
+          GDRIVE_TOKEN_B64: ${{ secrets.GDRIVE_TOKEN_B64 }}
         run: |
           set -e
           set -o pipefail
