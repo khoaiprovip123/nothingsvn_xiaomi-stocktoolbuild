@@ -127,103 +127,6 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Split Large File
-        id: split
-        shell: bash
-        run: |
-          FILE=$(find out -maxdepth 1 -name "*.zip" | head -n1)
-
-          if [ -z "$FILE" ]; then
-          echo "No ROM zip found!"
-          exit 1
-          fi
-
-          echo "file=$FILE" >> "$GITHUB_OUTPUT"
-
-          SIZE=$(stat -c%s "$FILE")
-          LIMIT=$((9 * 1024 * 1024 * 1024))
-
-          if [ "$SIZE" -gt "$LIMIT" ]; then
-          echo "Splitting ROM..."
-          7z a -t7z -mx=0 -v9g "${FILE}.7z" "$FILE"
-          echo "split=true" >> "$GITHUB_OUTPUT"
-          else
-          echo "split=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Upload to Pixeldrain
-        id: pd
-        shell: bash
-        continue-on-error: true
-        env:
-          PD_API_KEY: ${{ secrets.PIXELDRAIN_API_KEY }}
-        run: |
-          # Pixeldrain là TÙY CHỌN — thiếu API key thì bỏ qua, không fail build.
-          if [ -z "$PD_API_KEY" ]; then
-            echo "WARN: PIXELDRAIN_API_KEY not set — skipping Pixeldrain upload."
-            echo "links=" >> "$GITHUB_OUTPUT"
-            echo "split=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          FILE="${{ steps.split.outputs.file }}"
-
-          if [[ "${{ steps.split.outputs.split }}" == "true" ]]; then
-          LINKS=""
-          COUNT=1
-
-          for PART in "${FILE}.7z".*; do
-          [ -e "$PART" ] || continue
-
-          echo "Uploading $PART"
-
-          RESPONSE=$(curl -s \
-          -u ":$PD_API_KEY" \
-          -F "file=@${PART}" \
-          https://pixeldrain.com/api/file)
-
-          ID=$(echo "$RESPONSE" | jq -r '.id')
-
-          if [[ -z "$ID" || "$ID" == "null" ]]; then
-          echo "Upload failed for $PART. Response:"
-          echo "$RESPONSE"
-          exit 1
-          fi
-
-          URL="https://pixeldrain.com/u/$ID"
-
-          if [[ -z "$LINKS" ]]; then
-          LINKS="<a href='$URL'>Part $COUNT</a>"
-          else
-          LINKS="$LINKS | <a href='$URL'>Part $COUNT</a>"
-          fi
-
-          COUNT=$((COUNT + 1))
-          done
-          else
-          echo "Uploading $FILE"
-
-          RESPONSE=$(curl -s \
-          -u ":$PD_API_KEY" \
-          -F "file=@${FILE}" \
-          https://pixeldrain.com/api/file)
-
-          ID=$(echo "$RESPONSE" | jq -r '.id')
-
-          if [[ -z "$ID" || "$ID" == "null" ]]; then
-          echo "Upload failed. Response:"
-          echo "$RESPONSE"
-          exit 1
-          fi
-
-          LINKS="<a href='https://pixeldrain.com/u/$ID'>Download</a>"
-          fi
-
-          echo "links=$LINKS" >> "$GITHUB_OUTPUT"
-
-          # =======================================================
-          # CẬP NHẬT TRẠNG THÁI JSON SANG MY-ASSETS (FIX LỖI MẤT NHÁY LINK)
-          # =======================================================
-
       - name: Update Status to My-Assets
         if: always()
         continue-on-error: true
@@ -265,19 +168,10 @@ jobs:
           fi
           : "${ROM_NAME:=Unknown}"
 
-          # 5. Xử lý dữ liệu đầu ra và trích xuất Link sạch
-          IS_SPLIT="false"
-          PD_URL=""
+          # 5. Thông tin upload
+          GDRIVE_URL="https://drive.google.com/drive/folders/1Ezo6s99nX70l_wV24WAzr_A4t4WpFdSx"
 
-          if [[ "$JOB_STATUS" == "success" ]]; then
-          IS_SPLIT="${{ steps.split.outputs.split }}"
-
-          # Trích xuất duy nhất link URL sạch từ HTML
-          RAW_LINKS='${{ steps.pd.outputs.links }}'
-          PD_URL=$(echo "$RAW_LINKS" | grep -oP 'https?://[^\s">]+' | head -n1)
-          fi
-
-          # 6. Tạo file Markdown render chuẩn giao diện web GitHub (Bấm vào link chuyển hướng ngay)
+          # 6. Tạo file Markdown render chuẩn giao diện web GitHub
           echo "# 📦 Build Status" > "ROM/repo/$FILENAME"
           echo "" >> "ROM/repo/$FILENAME"
           echo "- **Tên ROM:** \`$ROM_NAME\`" >> "ROM/repo/$FILENAME"
@@ -285,13 +179,8 @@ jobs:
           echo "- **Commit:** \`$SHORT_SHA\`" >> "ROM/repo/$FILENAME"
           echo "- **Link rom gốc:** [Click vào đây để tải ROM gốc](${{ inputs.input_url }})" >> "ROM/repo/$FILENAME"
           echo "" >> "ROM/repo/$FILENAME"
-          echo "### ⬇️ Pixeldrain Download" >> "ROM/repo/$FILENAME"
-          echo "- **Cắt file:** \`$IS_SPLIT\`" >> "ROM/repo/$FILENAME"
-          if [ -n "$PD_URL" ]; then
-          echo "- **Link tải:** [$PD_URL]($PD_URL)" >> "ROM/repo/$FILENAME"
-          else
-          echo "- **Link tải:** N/A" >> "ROM/repo/$FILENAME"
-          fi
+          echo "### ⬇️ Download" >> "ROM/repo/$FILENAME"
+          echo "- **Google Drive:** [KTOS ROM folder]($GDRIVE_URL)" >> "ROM/repo/$FILENAME"
 
           # 7. Commit và đẩy lên với vòng lặp Rebase
           git add "ROM/repo/$FILENAME"
