@@ -1,127 +1,66 @@
 @echo off
-setlocal enabledelayedexpansion
+cd /d "%~dp0"
 chcp 437 >nul
-title KTOS ROM Flasher
+title KTOS ROM Flasher - lisa
 
-set "ROOT=%~dp0"
-set "FW=%ROOT%firmware-update"
-set "SUPER=%ROOT%super"
-set "FB=%ROOT%bin\fastboot.exe"
-set "LOG=%ROOT%flash.log"
-
-:: --- log helper ---
-call :log "========== KTOS ROM Flasher =========="
-
-echo.
-echo ==========================================
-echo   KTOS ROM Flasher
-echo ==========================================
-echo.
-
-:: --- 1. check fastboot ---
-if not exist "%FB%" (
-  call :log "ERROR: bin\fastboot.exe not found"
-  echo [ERROR] bin\fastboot.exe not found.
-  pause & exit /b 1
+set fastboot=bin\windows\fastboot.exe
+if not exist %fastboot% (
+  echo %fastboot% not found.
+  pause
+  exit /B 1
 )
-call :log "Using fastboot: %FB%"
 
-:: --- 2. check device ---
-echo [1/5] Checking device...
-"%FB%" devices | findstr /r /c:"fastboot" >nul 2>&1
-if errorlevel 1 (
-  call :log "ERROR: no fastboot device"
-  echo [ERROR] No fastboot device. Boot to FASTBOOT + connect USB.
-  pause & exit /b 1
+echo Waiting for device...
+set device=
+for /f "tokens=2" %%D in ('%fastboot% getvar product 2^>^&1 ^| findstr /l /b /c:"product:"') do set device=%%D
+if "%device%" equ "" (
+  echo Your device could not be detected.
+  pause
+  exit /B 1
 )
-for /f "tokens=1" %%d in ('"%FB%" devices') do set "SERIAL=%%d"
-echo       Device: %SERIAL%
-call :log "Device: %SERIAL%"
+echo Your device: %device%
+if "%device%" neq "lisa" (
+  echo Compatible devices: lisa
+  pause
+  exit /B 1
+)
 
-:: --- 3. check files ---
-echo [2/5] Checking ROM files...
-if not exist "%SUPER%\super.img" (echo [ERROR] super\super.img missing. & call :log "ERROR: super.img missing" & pause & exit /b 1)
-if not exist "%FW%\vbmeta.img" (echo [ERROR] firmware-update\vbmeta.img missing. & pause & exit /b 1)
-if not exist "%FW%\boot.img" (echo [ERROR] firmware-update\boot.img missing. & pause & exit /b 1)
-echo       OK: firmware-update\ + super\
-call :log "ROM files OK"
+echo ================================
+echo   KTOS ROM - Xiaomi 11 Lite 5G NE (lisa)
+echo ================================
+echo This process will ERASE all data and flash the ROM.
+set /p choice=Do you want to continue? [y/N] 
+if /i "%choice%" neq "y" (
+  exit /B 0
+)
 
-:: --- 4. data mode ---
-echo.
-echo   DATA MODE / CHE DO DU LIEU:
-echo     1. FORMAT DATA  (xoa het - sach, khuyen nghi)
-echo     2. KEEP DATA    (giu app + du lieu)
-echo.
-set /p "MODE=Chon (1/2): "
-if "!MODE!"=="1" (set "DOFORMAT=1") else (set "DOFORMAT=0")
-if "!DOFORMAT!"=="1" (call :log "Data mode: FORMAT") else (call :log "Data mode: KEEP")
+echo ##############################################################
+echo Please wait. The device will reboot once flashing is complete.
+echo ##############################################################
 
-set /p "OK=Proceed / Tiep tuc? (y/N): "
-if /i not "!OK!"=="y" (call :log "Cancelled by user" & echo Cancelled. & pause & exit /b 0)
+:: --- set active slot a ---
+%fastboot% set_active a
 
-:: --- 5. flash firmware ---
-echo.
-echo [3/5] Flashing firmware (modem/bluetooth/dsp/tz/xbl...)...
-call :log "--- Flashing firmware ---"
-for %%f in (modem bluetooth dsp tz xbl xbl_config abl aop hyp cpucp devcfg featenabler imagefv keymaster qupfw shrm uefisecapp cust) do (
-  if exist "%FW%\%%f.img" (
-    echo       %%f.img
-    call :log "flash %%f"
-    "%FB%" flash %%f "%FW%\%%f.img" >> "%LOG%" 2>&1
+:: --- flash firmware (both slots via _ab) ---
+for %%f in (abl aop bluetooth cpucp devcfg dsp dtbo featenabler hyp imagefv keymaster modem qupfw shrm tz uefisecapp vbmeta vbmeta_system xbl xbl_config boot vendor_boot) do (
+  if exist "images\%%f.img" (
+    echo Flashing %%f...
+    %fastboot% flash %%f_ab images\%%f.img
   )
 )
+if exist "images\cust.img" %fastboot% flash cust images\cust.img
 
-:: --- 6. flash vbmeta (disable verity) ---
-echo       vbmeta (disable verity)
-call :log "flash vbmeta (disable verity)"
-"%FB%" --disable-verity --disable-verification flash vbmeta "%FW%\vbmeta.img" >> "%LOG%" 2>&1
-if exist "%FW%\vbmeta_system.img" "%FB%" --disable-verity --disable-verification flash vbmeta_system "%FW%\vbmeta_system.img" >> "%LOG%" 2>&1
+:: --- flash super ---
+echo Flashing super (few minutes)...
+%fastboot% flash super images\super.img
 
-:: --- 7. flash system ---
-echo.
-echo [4/5] Flashing system (boot/dtbo/super)...
-call :log "--- Flashing system ---"
-if exist "%FW%\boot.img" "%FB%" flash boot "%FW%\boot.img" >> "%LOG%" 2>&1
-if exist "%FW%\dtbo.img" "%FB%" flash dtbo "%FW%\dtbo.img" >> "%LOG%" 2>&1
-if exist "%FW%\vendor_boot.img" "%FB%" flash vendor_boot "%FW%\vendor_boot.img" >> "%LOG%" 2>&1
-if exist "%FW%\init_boot.img" "%FB%" flash init_boot "%FW%\init_boot.img" >> "%LOG%" 2>&1
-echo       super.img (vai phut)...
-call :log "flash super (takes minutes)"
-"%FB%" flash super "%SUPER%\super.img" >> "%LOG%" 2>&1
-if errorlevel 1 (
-  call :log "ERROR: flash super failed"
-  echo [ERROR] Flash super failed. Try: fastboot reboot fastboot
-  pause & exit /b 1
-)
+:: --- erase data ---
+%fastboot% erase metadata
+%fastboot% erase userdata
 
-:: --- 8. format / keep data ---
-echo.
-echo [5/5] Data...
-if "!DOFORMAT!"=="1" (
-  echo       Formatting data...
-  call :log "erase userdata/metadata/cache"
-  "%FB%" erase userdata >> "%LOG%" 2>&1
-  "%FB%" erase metadata >> "%LOG%" 2>&1
-  "%FB%" erase cache >> "%LOG%" 2>&1
-) else (
-  echo       Keeping data.
-  call :log "keeping data"
-)
-
-:: --- 9. done ---
-call :log "========== FLASH COMPLETE =========="
-echo.
-echo ==========================================
-echo   FLASH COMPLETE!
-if "!DOFORMAT!"=="1" (echo   Data: FORMATTED)
-if "!DOFORMAT!"=="0" (echo   Data: KEPT)
-echo   Log: flash.log
-echo ==========================================
-"%FB%" reboot
-call :log "rebooting"
+echo ##############################################################
+echo   FLASH COMPLETE! Rebooting...
+echo ##############################################################
+%fastboot% reboot
 pause
-exit /b 0
-
-:log
-echo %date% %time% %~1 >> "%LOG%"
-goto :eof
+exit /B 0

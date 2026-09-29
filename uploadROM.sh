@@ -84,41 +84,39 @@ else
     os_type="HyperOS"
 fi
 
-repack "Generating clean ROM structure..."
+repack "Generating clean ROM structure (xiaomi.eu style)..."
 out_dir="${work_dir}/out/${os_type}_${device_code}_${base_rom_code}"
 rm -rf "$out_dir"
 
-# Cấu trúc ROM gọn:
-#   firmware-update/  = các .img hệ thống (modem, boot, vbmeta, dtbo...)
-#   super/            = super.img
-#   bin/              = fastboot.exe, adb.exe, DLL
+# Cấu trúc chuẩn (theo xiaomi.eu):
+#   images/           = TẤT CẢ .img (firmware + super.img)
+#   bin/windows/      = fastboot.exe, adb.exe, DLL
 #   flash.bat         = file nạp DUY NHẤT
+mkdir -p "$out_dir/images/" "$out_dir/bin/windows/"
 if [[ ${baserom_type} == 'payload' ]]; then
-    mkdir -p "$out_dir/firmware-update/" "$out_dir/super/" "$out_dir/bin/"
-    mv -f "$work_dir/build/baserom/images/super.img" "$out_dir/super/"
-    mv -f "$work_dir/build/baserom/images/"*.img "$out_dir/firmware-update/"
+    # Đưa TẤT CẢ .img vào images/ (gồm cả super.img).
+    mv -f "$work_dir/build/baserom/images/"*.img "$out_dir/images/"
 elif [[ ${baserom_type} == 'br' ]]; then
-    mkdir -p "$out_dir/firmware-update/" "$out_dir/super/" "$out_dir/bin/"
-    mv -f "$work_dir/build/baserom/firmware-update/"* "$out_dir/firmware-update/"
-    mv -f "$work_dir/build/baserom/images/super.img" "$out_dir/super/"
+    mv -f "$work_dir/build/baserom/firmware-update/"* "$out_dir/images/"
+    mv -f "$work_dir/build/baserom/images/super.img" "$out_dir/images/"
 fi
 
-# Copy cust.img vào firmware-update (nếu có).
-cp -f "$work_dir/bin/script2flash/cust.img" "$out_dir/firmware-update/" 2>/dev/null || true
+# cust.img vào images/.
+cp -f "$work_dir/bin/script2flash/cust.img" "$out_dir/images/" 2>/dev/null || true
 
-# Công cụ nạp vào bin/ — user không cần tải thêm.
+# Công cụ vào bin/windows/ (theo chuẩn xiaomi.eu).
 for tool in fastboot.exe adb.exe AdbWinApi.dll AdbWinUsbApi.dll; do
-    [[ -f "$work_dir/bin/script2flash/$tool" ]] && cp -f "$work_dir/bin/script2flash/$tool" "$out_dir/bin/"
+    [[ -f "$work_dir/bin/script2flash/$tool" ]] && cp -f "$work_dir/bin/script2flash/$tool" "$out_dir/bin/windows/"
 done
-info "bin/ tools added (fastboot + adb + DLL)"
+info "bin/windows/ tools added"
 
-# CHỈ 1 file nạp: flash.bat (tự dùng bin\fastboot.exe, ghi log).
+# CHỈ 1 file nạp: flash.bat.
 if [[ -f "$work_dir/bin/script2flash/flash.bat" ]]; then
     cp -f "$work_dir/bin/script2flash/flash.bat" "$out_dir/"
-    info "flash.bat added (single flasher with log)"
+    info "flash.bat added (single flasher)"
 fi
 
-# BUILD_INFO.txt — thông tin build (không phải file nạp, chỉ để xem).
+# BUILD_INFO.txt.
 bash "$work_dir/bin/ddevice/genBuildInfo.sh"
 [[ -f "$work_dir/build/baserom/BUILD_INFO.txt" ]] && cp -f "$work_dir/build/baserom/BUILD_INFO.txt" "$out_dir/"
 
