@@ -1,4 +1,4 @@
-# Byte-compiled / cache
+﻿# Byte-compiled / cache
 __pycache__/
 *.py[cod]
 *.pyo
@@ -35,4 +35,11 @@ graphify-out/
 # APK vượt giới hạn 100MB của GitHub (không commit — cần host riêng)
 bin/modfile/UpdateFile/ReplaceApps/apks/HolyBear_5.0.230706.0_release.apk
 bin/modfile/UpdateFile/ReplaceApps/apks/SecurityMod_v13.5.3_PeaceModss.apk
-bin/modfile/UpdateFile/MultiLang/updatesource/Nothings.SecurityCenter.apk
+bin/modfile/UpdateFile/MultiLang/updatesource/KTOS.SecurityCenter.apk
+
+# Secrets — KHÔNG BAO GIỜ commit
+client_secret.json
+token.b64
+token.pickle
+.code_verifier
+gdrive_auth.py

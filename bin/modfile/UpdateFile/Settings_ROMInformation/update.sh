@@ -64,8 +64,8 @@ mods "Add ROM Information To HyperOS"
   $repS $tar4 $p1
 
   mods "Updating build.prop"
-  echo "ro.nothings.version=NothingsOS $myversion | $final_version" >> $my
-  echo "ro.nothings.osversion=${simposcode}.${build_date}" >> $my
+  echo "ro.ktos.version=KTOS $myversion | $final_version" >> $my
+  echo "ro.ktos.osversion=${simposcode}.${build_date}" >> $my
   echo "ro.ktos.simposcode=By KTOS $myversion" >> $my
 
   mods "Rebuild..."

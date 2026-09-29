@@ -1,4 +1,4 @@
-#xu-ly-device_code
+﻿#xu-ly-device_code
 baserom="$1"
 work_dir=$(pwd)
 source $work_dir/functions.sh
@@ -36,7 +36,7 @@ echo "$AndroidVer" > $work_dir/bin/ddevice/androidver.txt
 echo "$sdkLevel" > $work_dir/bin/ddevice/sdkLevel.txt
 
 
-echo "------------------Nothings BuildInfo ---------------------"
+echo "------------------KTOS BuildInfo ---------------------"
 echo "- Device Name: $name"
 echo "- Codename: $device_code"
 echo "- Xiaomi Version: $rom_os"  

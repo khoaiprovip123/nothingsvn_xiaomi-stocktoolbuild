@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # uploadROM.sh — package the flashable zip and upload it.
 # Usage:
 #   bash uploadROM.sh setup <GH_TOKEN> <GH_REPO> <RCLONE_TOKEN_PATH>
@@ -16,7 +16,7 @@ chmod +x "${tools_dir}"/* 2>/dev/null || true
 source "$work_dir/functions.sh"
 
 RCLONE_CONFIG_1DRIVE="$work_dir/rclone.conf"
-ONEDRIVE_REMOTE="nothings-toolbuild"
+ONEDRIVE_REMOTE="ktos-toolbuild"
 
 # Google Drive destination — override via env, never hardcode a secret-ish ID.
 : "${GDRIVE_FOLDER_ID:=1Ezo6s99nX70l_wV24WAzr_A4t4WpFdSx}"

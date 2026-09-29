@@ -1,4 +1,4 @@
-#chinh-sua-genInstall.sh
+﻿#chinh-sua-genInstall.sh
 #!/bin/bash
 work_dir=$(pwd)
 
@@ -48,7 +48,7 @@ cat <<EOF > "$OUTPUT_FILE"
     "ToolBuild": {
         "Version": "${starxVER:-1.0}",
         "BuildDate": "${build_date}",
-        "Author": "${builder_name:-Nothings}",
+        "Author": "${builder_name:-KTOS}",
         "BuildType": "PureStock-Release"
     },
     "Directory": {

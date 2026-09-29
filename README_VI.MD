@@ -7,7 +7,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Version](https://img.shields.io/badge/version-v1.0-green.svg)](#)
 [![Platform](https://img.shields.io/badge/platform-Linux%20x86__64-lightgrey.svg)](#)
-[![Telegram](https://img.shields.io/badge/Telegram-Cộng%20đồng-2CA5E0?logo=telegram&logoColor=white)](https://t.me/nothingscom)
+[![Telegram](https://img.shields.io/badge/Telegram-KTOS%20đồng-2CA5E0?logo=telegram&logoColor=white)](https://t.me/nothingscom)
 
 **🌐 Language / Ngôn ngữ:** [English](README.MD) | **Tiếng Việt**
 
@@ -49,7 +49,7 @@
 ## 📁 Cấu trúc dự án
 
 ```
-nothingsvn_xiaomi-stocktoolbuild/
+ktos_xiaomi-stocktoolbuild/
 ├── 📜 build.sh              # Script build chính
 ├── 📜 functions.sh          # Các hàm tiện ích dùng chung
 ├── 📜 packROM.sh            # Đóng gói ROM (super.img + phân vùng)
@@ -95,8 +95,8 @@ bash setup.sh
 
 ```bash
 # Clone repository
-git clone https://github.com/khoaiprovip123/nothingsvn_xiaomi-stocktoolbuild.git
-cd nothingsvn_xiaomi-stocktoolbuild
+git clone https://github.com/khoaiprovip123/ktos_xiaomi-stocktoolbuild.git
+cd ktos_xiaomi-stocktoolbuild
 ```
 
 ```bash
@@ -193,7 +193,7 @@ Xin gửi lời cảm ơn chân thành đến tất cả mọi người đã gó
 
 <div align="center">
 
-[![Telegram Thảo luận](https://img.shields.io/badge/💬_Thảo_luận-Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/nothingscom)
+[![Telegram KTOS](https://img.shields.io/badge/💬_Thảo_luận-Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/nothingscom)
 [![Telegram Tin tức](https://img.shields.io/badge/📢_Kênh_tin_tức-Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/oneplusntvn)
 
 </div>
