@@ -1,4 +1,4 @@
-work_dir=$(pwd)
+﻿work_dir=$(pwd)
 source $work_dir/functions.sh
 source $work_dir/bin/package/DISABLE_AVB/DISABLEavb.sh
 
@@ -14,7 +14,7 @@ echo "
 " >> "$work_dir/build/baserom/images/system_ext/etc/selinux/system_ext_sepolicy.cil"
 
 
-if [ "$vbmeta_disable" = "true" ]; then
+if [ "${vbmeta_disable:-false}" = "true" ]; then
     vbmeta_digest=$(sha256sum "$work_dir/build/baserom/images/vbmeta.img" | cut -d ' ' -f1)
     vbmeta_size=$(stat -c%s "$work_dir/build/baserom/images/vbmeta.img")
     echo "
