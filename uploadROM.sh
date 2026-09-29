@@ -32,7 +32,10 @@ device_f=$(cat "$work_dir/bin/ddevice/device_f.txt") || true
 
 if [ "${1:-}" == "setup" ]; then
   if [ -z "${2:-}" ] || [ -z "${3:-}" ] || [ -z "${4:-}" ]; then
-    die "Please provide rclone token and remote name"
+    # Upload credentials là TÙY CHỌN — thiếu thì bỏ qua, không kill build.
+    warn "Thiếu GH_TOKEN/GH_REPO/RCLONE_TOKEN_PATH — bỏ qua thiết lập upload."
+    warn "  (Cấu hình GitHub Secrets nếu muốn upload Google Drive / OneDrive.)"
+    exit 0
   fi
   curl -s -o "$work_dir/rclone.conf" \
         -H "Authorization: token $2" \
