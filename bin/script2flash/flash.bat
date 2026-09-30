@@ -7,16 +7,29 @@ set "FB=fastboot.exe"
 if exist "%~dp0bin\windows\fastboot.exe" set "FB=%~dp0bin\windows\fastboot.exe"
 if exist "%~dp0fastboot.exe" set "FB=%~dp0fastboot.exe"
 
-:: detect super.img (images\ or super\)
+:: detect super.img
 set "SUPERIMG=images\super.img"
 if not exist "%SUPERIMG%" set "SUPERIMG=super\super.img"
 
+echo Using: %FB%
+echo.
 echo Waiting for device...
 set "device="
-for /f "tokens=2" %%D in ('"%FB%" getvar product 2^>^&1 ^| findstr /l /b /c:"product:"') do set "device=%%D"
-if "!device!"=="" (echo Device not detected. & pause & exit /B 1)
+for /f "tokens=2" %%D in ('%FB% getvar product 2^>^&1 ^| findstr /l /b /c:"product:"') do set "device=%%D"
+if "!device!"=="" (
+  echo [ERROR] Device not detected!
+  echo   - Boot device to FASTBOOT (Vol-Down + Power)
+  echo   - Connect USB cable
+  echo   - Make sure driver installed
+  pause
+  exit /B 1
+)
 echo Device: !device!
-if /i not "!device!"=="lisa" (echo ROM is for lisa. Your device: !device! & pause & exit /B 1)
+if /i not "!device!"=="lisa" (
+  echo This ROM is for lisa. Your device: !device!
+  pause
+  exit /B 1
+)
 
 echo ==========================================
 echo   KTOS ROM - lisa (Xiaomi 11 Lite 5G NE)

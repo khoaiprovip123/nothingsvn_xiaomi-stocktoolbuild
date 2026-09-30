@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # MultiLang/update.sh — cài app đa ngôn ngữ + framework resources (tiếng Việt).
 #
 # framework_res.apk = nguồn NGÔN NGỮ hệ thống (Vietnamese, English...).
@@ -24,7 +24,10 @@ done
 mods "Installing multilingual resources + apps (Vietnamese)..."
 
 # --- 1. Framework resources (NGÔN NGỮ) — cài vào system/framework/ ---
-if [[ -n "$FRAMEWORK_DIR" ]]; then
+# CHU Y: Thay framework-res.apk co the gay BOOTLOOP neu khong khop phien ban HyperOS.
+# Mac dinh TAT. Bat bang: export INSTALL_FRAMEWORK_RES=true
+INSTALL_FRAMEWORK_RES="${INSTALL_FRAMEWORK_RES:-false}"
+if [[ "$INSTALL_FRAMEWORK_RES" == "true" && -n "$FRAMEWORK_DIR" ]]; then
     if [[ -f "$SRC/KTOS.framework_res.apk" ]]; then
         cp -f "$SRC/KTOS.framework_res.apk" "$FRAMEWORK_DIR/framework-res.apk"
         info "Installed framework-res.apk (adds Vietnamese language)"
